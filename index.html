@@ -18,7 +18,6 @@
         body { font-family: 'Heebo', sans-serif; }
         [x-cloak] { display: none !important; }
         
-        /* אפקט התרוקנות קשיח של 3 שניות לכפתור הדלג */
         .progress-fill {
             animation: shrinkWidth 3s linear forwards;
         }
@@ -37,10 +36,8 @@
          x-transition:leave-end="opacity-0"
          class="fixed inset-0 bg-gray-950 z-[100] flex flex-col items-center justify-between p-6 text-center select-none">
         
-        <!-- שטח ריק לאיזון הגריד במסך -->
         <div></div>
 
-        <!-- מרכז המסך: לוגו ומשפט השראה -->
         <div class="flex flex-col items-center max-w-lg px-4 gap-6">
             <div class="w-48 md:w-64">
                 <img src="לוגו דרכא שקוף.png" alt="תיכון דרכא" class="w-full h-auto object-contain">
@@ -49,7 +46,6 @@
             <p class="text-xl md:text-2xl font-medium text-emerald-400 leading-relaxed" x-text="motivationalQuote"></p>
         </div>
 
-        <!-- תחתית המסך: כפתור דלג -->
         <div class="w-full max-w-xs mb-8">
             <button @click="showSplash = false" class="relative w-full bg-gray-900 border border-gray-800 rounded-xl py-3 px-6 text-sm font-bold overflow-hidden text-white hover:border-gray-700 transition active:scale-[0.98]">
                 <div class="absolute inset-y-0 right-0 bg-emerald-600/20 progress-fill"></div>
@@ -67,13 +63,11 @@
         <header class="border-b border-gray-800 bg-gray-900/50 backdrop-blur-md sticky top-0 z-50 px-4 py-3">
             <div class="max-w-5xl mx-auto flex flex-row items-center justify-between gap-4">
                 
-                <!-- Right: Title & Random Motivational Quote -->
                 <div class="flex flex-col text-right">
                     <h1 class="text-lg md:text-xl font-bold tracking-tight text-white">לוח בחינות ואירועים</h1>
                     <p class="text-xs md:text-sm text-emerald-400/95 font-medium mt-0.5" x-text="motivationalQuote"></p>
                 </div>
 
-                <!-- Left: Logo -->
                 <div class="w-28 md:w-36 shrink-0 flex justify-end">
                     <img src="לוגו דרכא שקוף.png" alt="תיכון דרכא" class="max-h-10 md:max-h-12 w-auto object-contain">
                 </div>
@@ -83,7 +77,6 @@
             <!-- Filters Grid -->
             <div class="max-w-5xl mx-auto mt-3">
                 <div class="flex flex-wrap items-center gap-3 bg-gray-900 p-2 rounded-xl border border-gray-800/80 w-full">
-                    <!-- Dropdown: Layer -->
                     <div class="flex-1 min-w-[120px]">
                         <select x-model="selectedLayer" @change="handleLayerChange()" class="w-full bg-gray-800 text-sm rounded-lg border border-gray-700 px-3 py-2 text-white focus:outline-none focus:border-emerald-500 transition">
                             <option value="all">כלל בית הספר</option>
@@ -94,7 +87,6 @@
                         </select>
                     </div>
 
-                    <!-- Dropdown: Class -->
                     <div class="flex-1 min-w-[110px]">
                         <select x-model="selectedClass" :disabled="selectedLayer === 'all'" class="w-full bg-gray-800 text-sm rounded-lg border border-gray-700 px-3 py-2 text-white focus:outline-none focus:border-emerald-500 transition disabled:opacity-40 disabled:cursor-not-allowed">
                             <option value="all">כל השכבה</option>
@@ -104,7 +96,6 @@
                         </select>
                     </div>
 
-                    <!-- Input: Search -->
                     <div class="w-full sm:w-52 relative">
                         <input type="text" x-model="searchQuery" placeholder="חיפוש חופשי..." class="w-full bg-gray-800 text-sm rounded-lg border border-gray-700 pr-8 pl-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition">
                         <span class="absolute right-2.5 top-2.5 text-gray-500">
@@ -118,7 +109,6 @@
         <!-- Main Content -->
         <main class="max-w-5xl mx-auto px-4 py-6">
             
-            <!-- Loading & Errors States -->
             <div x-show="loading" class="flex flex-col items-center justify-center py-20 gap-3">
                 <div class="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
                 <p class="text-gray-400 text-sm">טוען נתונים ומסנכרן את הלוח...</p>
@@ -126,34 +116,36 @@
 
             <div x-show="!loading && error" class="bg-red-950/40 border border-red-800/60 text-red-200 p-4 rounded-xl text-center" x-text="error" x-cloak></div>
 
-            <!-- Empty State -->
             <div x-show="!loading && filteredEvents.length === 0" class="text-center py-16 bg-gray-900/20 border border-gray-800/60 rounded-xl" x-cloak>
                 <p class="text-gray-400">לא נמצאו בחינות או אירועים העונים על סינון זה.</p>
             </div>
 
             <!-- List Layout -->
-            <div x-show="!loading && filteredEvents.length > 0" class="space-y-2" x-cloak>
+            <div x-show="!loading && filteredEvents.length > 0" class="space-y-3" x-cloak>
                 <template x-for="event in filteredEvents" :key="event.id">
-                    <div class="flex items-center justify-between gap-4 p-3 bg-gray-900/60 hover:bg-gray-900 border border-gray-800 hover:border-gray-700/80 rounded-xl transition duration-150">
+                    <div class="flex flex-col gap-2 p-4 bg-gray-900/60 hover:bg-gray-900 border border-gray-800 hover:border-gray-700/80 rounded-xl transition duration-150">
                         
-                        <!-- Right: Date & Day Box -->
-                        <div class="flex items-center gap-2 bg-gray-800/80 border border-gray-700 px-3 py-1.5 rounded-lg shrink-0 text-xs sm:text-sm font-medium text-gray-200">
-                            <span x-text="event.formattedDate"></span>
-                            <span class="text-gray-500 font-normal">|</span>
-                            <span x-text="event.dayOfWeek" class="text-emerald-400 font-bold"></span>
+                        <!-- שורה ראשונה: תאריך, יום וכיתות -->
+                        <div class="flex items-center justify-between w-full">
+                            <!-- ימין: תאריך ויום -->
+                            <div class="flex items-center gap-2 bg-gray-800/80 border border-gray-700 px-3 py-1 rounded-lg text-xs font-medium text-gray-200">
+                                <span x-text="event.formattedDate"></span>
+                                <span class="text-gray-500 font-normal">|</span>
+                                <span x-text="event.dayOfWeek" class="text-emerald-400 font-bold"></span>
+                            </div>
+
+                            <!-- שמאל: כיתה / שכבה -->
+                            <div>
+                                <span :class="event.isHoliday ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'" 
+                                      class="text-xs font-semibold px-2.5 py-1 rounded-md border" 
+                                      x-text="event.targetDisplay">
+                                </span>
+                            </div>
                         </div>
 
-                        <!-- Center: Subject Text -->
-                        <div class="flex-1 min-w-0 text-right">
-                            <span class="text-sm sm:text-base text-gray-100 font-medium block truncate" :title="event.title" x-text="event.title"></span>
-                        </div>
-
-                        <!-- Left: Target Class / Layer Tag -->
-                        <div class="shrink-0">
-                            <span :class="event.isHoliday ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'" 
-                                  class="text-xs font-semibold px-2.5 py-1 rounded-md border" 
-                                  x-text="event.targetDisplay">
-                            </span>
+                        <!-- שורה שנייה: שם המבחן/האירוע -->
+                        <div class="text-right pt-1">
+                            <h3 class="text-base sm:text-lg text-white font-semibold leading-snug" x-text="event.title"></h3>
                         </div>
 
                     </div>
@@ -174,7 +166,7 @@
                 selectedClass: 'all',
                 searchQuery: '',
                 motivationalQuote: '',
-                showSplash: true, // משתנה למסך הפתיחה
+                showSplash: true,
                 
                 quotes: [
                     "ההשקעה של היום היא ההצלחה של מחר.",
@@ -190,7 +182,6 @@
                 init() {
                     this.motivationalQuote = this.quotes[Math.floor(Math.random() * this.quotes.length)];
                     
-                    // טיימר של 3 שניות קשיחות לסגירת המסך אוטומטית
                     setTimeout(() => {
                         this.showSplash = false;
                     }, 3000);
@@ -215,59 +206,62 @@
                         
                         const dataTable = response.getDataTable();
                         const numRows = dataTable.getNumberOfRows();
+                        const numCols = dataTable.getNumberOfColumns();
                         const rawEvents = [];
 
-                        for (let i = 0; i < numRows; i++) {
-                            const dateValue = dataTable.getValue(i, 0);   
-                            const dayValue = dataTable.getValue(i, 1);    
-                            const classValue = dataTable.getValue(i, 2);  
-                            const eventValue = dataTable.getValue(i, 3);  
+                        for (let colOffset = 0; colOffset < numCols; colOffset += 4) {
+                            for (let i = 0; i < numRows; i++) {
+                                const dateValue = dataTable.getValue(i, colOffset);   
+                                const dayValue = dataTable.getValue(i, colOffset + 1);    
+                                const classValue = dataTable.getValue(i, colOffset + 2);  
+                                const eventValue = dataTable.getValue(i, colOffset + 3);  
 
-                            if (!dateValue || !eventValue) continue;
+                                if (!dateValue || !eventValue) continue;
 
-                            let rawDate = this.parseGoogleDate(dateValue);
-                            if (!rawDate) continue;
+                                let rawDate = this.parseGoogleDate(dateValue);
+                                if (!rawDate) continue;
 
-                            const classStr = classValue ? String(classValue).trim() : '';
-                            const eventStr = String(eventValue).trim();
+                                const classStr = classValue ? String(classValue).trim() : '';
+                                const eventStr = String(eventValue).trim();
 
-                            const isHoliday = classStr.includes('חופש') || classStr.includes('חג') || classStr.includes('כללי') || 
-                                              eventStr.includes('חופש') || eventStr.includes('חג');
+                                const isHoliday = classStr.includes('חופש') || classStr.includes('חג') || classStr.includes('כללי') || 
+                                                  eventStr.includes('חופש') || eventStr.includes('חג');
 
-                            let layer = 'all';
-                            let specificClass = 'all';
+                                let layer = 'all';
+                                let specificClass = 'all';
 
-                            const cleanClassStr = classStr.replace(/['"׳]/g, '');
+                                const cleanClassStr = classStr.replace(/['"׳]/g, '');
 
-                            if (/^ט\d+/.test(cleanClassStr)) {
-                                layer = 'ט';
-                                specificClass = classStr;
-                            } else if (/^יא\d+/.test(cleanClassStr)) {
-                                layer = 'יא';
-                                specificClass = classStr;
-                            } else if (/^יב\d+/.test(cleanClassStr)) {
-                                layer = 'יב';
-                                specificClass = classStr;
-                            } else if (/^י\d+/.test(cleanClassStr)) {
-                                layer = 'י';
-                                specificClass = classStr;
-                            } else {
-                                if (cleanClassStr === 'ט') layer = 'ט';
-                                else if (cleanClassStr === 'י') layer = 'י';
-                                else if (cleanClassStr === 'יא') layer = 'יא';
-                                else if (cleanClassStr === 'יב') layer = 'יב';
+                                if (/^ט\d+/.test(cleanClassStr)) {
+                                    layer = 'ט';
+                                    specificClass = classStr;
+                                } else if (/^יא\d+/.test(cleanClassStr)) {
+                                    layer = 'יא';
+                                    specificClass = classStr;
+                                } else if (/^יב\d+/.test(cleanClassStr)) {
+                                    layer = 'יב';
+                                    specificClass = classStr;
+                                } else if (/^י\d+/.test(cleanClassStr)) {
+                                    layer = 'י';
+                                    specificClass = classStr;
+                                } else {
+                                    if (cleanClassStr === 'ט') layer = 'ט';
+                                    else if (cleanClassStr === 'י') layer = 'י';
+                                    else if (cleanClassStr === 'יא') layer = 'יא';
+                                    else if (cleanClassStr === 'יב') layer = 'יב';
+                                }
+
+                                rawEvents.push({
+                                    dateObj: rawDate,
+                                    formattedDate: this.formatDate(rawDate),
+                                    dayOfWeek: dayValue || this.getDayName(rawDate),
+                                    title: eventStr,
+                                    layer: layer,
+                                    specificClass: specificClass,
+                                    isHoliday: isHoliday,
+                                    classRawValue: classStr
+                                });
                             }
-
-                            rawEvents.push({
-                                dateObj: rawDate,
-                                formattedDate: this.formatDate(rawDate),
-                                dayOfWeek: dayValue || this.getDayName(rawDate),
-                                title: eventStr,
-                                layer: layer,
-                                specificClass: specificClass,
-                                isHoliday: isHoliday,
-                                classRawValue: classStr
-                            });
                         }
 
                         const groupedMap = {};
