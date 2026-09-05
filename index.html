@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>לוח בחינות ואירועים - תיכון דרכא</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Alpine.js -->
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <!-- Google Visualization API -->
     <script src="https://www.gstatic.com/charts/loader.js"></script>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -25,11 +21,19 @@
             from { width: 100%; }
             to { width: 0%; }
         }
+
+        /* הסתרת פס הגלילה לטובת מראה נקי תוך שמירה על אפשרות הגלילה */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen relative shadow-inner" x-data="examsApp()">
 
-    <!-- מסך טעינה / פתיחה (Splash Screen) -->
     <div x-show="showSplash" 
          x-transition:leave="transition ease-in duration-500"
          x-transition:leave-start="opacity-100"
@@ -57,9 +61,7 @@
         </div>
     </div>
 
-    <!-- תוכן האתר הראשי -->
     <div>
-        <!-- Header Section -->
         <header class="border-b border-gray-800 bg-gray-900/50 backdrop-blur-md sticky top-0 z-50 px-4 py-3">
             <div class="max-w-5xl mx-auto flex flex-row items-center justify-between gap-4">
                 
@@ -74,7 +76,6 @@
 
             </div>
 
-            <!-- Filters Grid -->
             <div class="max-w-5xl mx-auto mt-3">
                 <div class="flex flex-wrap items-center gap-3 bg-gray-900 p-2 rounded-xl border border-gray-800/80 w-full">
                     <div class="flex-1 min-w-[120px]">
@@ -106,7 +107,6 @@
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="max-w-5xl mx-auto px-4 py-6">
             
             <div x-show="loading" class="flex flex-col items-center justify-center py-20 gap-3">
@@ -120,34 +120,29 @@
                 <p class="text-gray-400">לא נמצאו בחינות או אירועים העונים על סינון זה.</p>
             </div>
 
-            <!-- List Layout -->
-            <div x-show="!loading && filteredEvents.length > 0" class="space-y-3" x-cloak>
+            <div x-show="!loading && filteredEvents.length > 0" class="space-y-2" x-cloak>
                 <template x-for="event in filteredEvents" :key="event.id">
-                    <div class="flex flex-col gap-2 p-4 bg-gray-900/60 hover:bg-gray-900 border border-gray-800 hover:border-gray-700/80 rounded-xl transition duration-150">
-                        
-                        <!-- שורה ראשונה: תאריך, יום וכיתות -->
-                        <div class="flex items-center justify-between w-full">
-                            <!-- ימין: תאריך ויום -->
-                            <div class="flex items-center gap-2 bg-gray-800/80 border border-gray-700 px-3 py-1 rounded-lg text-xs font-medium text-gray-200">
+                    <div class="bg-gray-900/60 hover:bg-gray-900 border border-gray-800 hover:border-gray-700/80 rounded-xl transition duration-150 overflow-x-auto no-scrollbar">
+                        <div class="flex items-center justify-between gap-4 p-3 min-w-[500px]">
+                            
+                            <div class="flex items-center gap-2 bg-gray-800/80 border border-gray-700 px-3 py-1.5 rounded-lg shrink-0 text-xs sm:text-sm font-medium text-gray-200">
                                 <span x-text="event.formattedDate"></span>
                                 <span class="text-gray-500 font-normal">|</span>
                                 <span x-text="event.dayOfWeek" class="text-emerald-400 font-bold"></span>
                             </div>
 
-                            <!-- שמאל: כיתה / שכבה -->
-                            <div>
+                            <div class="flex-1 min-w-0 text-right">
+                                <span class="text-sm sm:text-base text-gray-100 font-medium block truncate" :title="event.title" x-text="event.title"></span>
+                            </div>
+
+                            <div class="shrink-0">
                                 <span :class="event.isHoliday ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'" 
-                                      class="text-xs font-semibold px-2.5 py-1 rounded-md border" 
+                                      class="text-xs font-semibold px-2.5 py-1 rounded-md border whitespace-nowrap" 
                                       x-text="event.targetDisplay">
                                 </span>
                             </div>
-                        </div>
 
-                        <!-- שורה שנייה: שם המבחן/האירוע -->
-                        <div class="text-right pt-1">
-                            <h3 class="text-base sm:text-lg text-white font-semibold leading-snug" x-text="event.title"></h3>
                         </div>
-
                     </div>
                 </template>
             </div>
