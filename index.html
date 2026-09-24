@@ -1,380 +1,363 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>לוח בחינות ואירועים - תיכון דרכא</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <script src="https://www.gstatic.com/charts/loader.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Heebo', sans-serif; }
-        [x-cloak] { display: none !important; }
-        
-        .progress-fill {
-            animation: shrinkWidth 3s linear forwards;
-        }
-        @keyframes shrinkWidth {
-            from { width: 100%; }
-            to { width: 0%; }
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>לוח מבחנים ואירועים</title>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --text-color: #e0e0e0;
+      --subtext-color: #a0a0a0;
+      --accent-color: #4da6ff;
+      --border-color: #333;
+      --settings-bg: #2a2a2a;
+    }
 
-        /* מניעת פס גלילה מכוער תוך שמירה על גלילה מתיקיה */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
+    /* מצב רקע לבן / בהיר */
+    body.light-theme {
+      --bg-color: #f5f5f7;
+      --card-bg: #ffffff;
+      --text-color: #1d1d1f;
+      --subtext-color: #6e6e73;
+      --accent-color: #0066cc;
+      --border-color: #e5e5e5;
+      --settings-bg: #ffffff;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      direction: rtl;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 800px;
+      margin: 0 auto 20px auto;
+      position: relative;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    /* כפתור גלגל שיניים */
+    .settings-btn {
+      background: none;
+      border: none;
+      color: var(--text-color);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+
+    .settings-btn:hover {
+      background-color: var(--border-color);
+    }
+
+    /* תפריט הגדרות צף */
+    .settings-menu {
+      display: none;
+      position: absolute;
+      left: 0;
+      top: 45px;
+      background-color: var(--settings-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 100;
+      min-width: 200px;
+      overflow: hidden;
+    }
+
+    .settings-menu.open {
+      display: block;
+    }
+
+    .settings-item {
+      padding: 12px 16px;
+      width: 100%;
+      text-align: right;
+      background: none;
+      border: none;
+      color: var(--text-color);
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: block;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .settings-item:last-child {
+      border-bottom: none;
+    }
+
+    .settings-item:hover {
+      background-color: var(--border-color);
+    }
+
+    /* סילטורים וכרטיסיות */
+    .controls {
+      display: flex;
+      gap: 10px;
+      max-width: 800px;
+      margin: 0 auto 20px auto;
+      flex-wrap: wrap;
+    }
+
+    select {
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 1rem;
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .events-container {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .event-card {
+      background-color: var(--card-bg);
+      border-right: 4px solid var(--accent-color);
+      padding: 16px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .event-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .event-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    .event-meta {
+      color: var(--subtext-color);
+      font-size: 0.9rem;
+    }
+
+    .event-class {
+      background-color: var(--border-color);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    .loading {
+      text-align: center;
+      color: var(--subtext-color);
+      margin-top: 40px;
+    }
+  </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen relative shadow-inner overflow-x-hidden" x-data="examsApp()">
+<body>
 
-    <div x-show="showSplash" 
-         x-transition:leave="transition ease-in duration-500"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-gray-950 z-[100] flex flex-col items-center justify-between p-6 text-center select-none">
+  <div class="header-container">
+    <h1>לוח מבחנים ואירועים</h1>
+    <button class="settings-btn" id="settingsBtn" title="הגדרות">⚙️</button>
+    
+    <div class="settings-menu" id="settingsMenu">
+      <button class="settings-item" id="togglePastBtn">הצג מבחנים בעבר</button>
+      <button class="settings-item" id="toggleThemeBtn">הפוך רקע ללבן</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <select id="gradeFilter">
+      <option value="">כל השכבות</option>
+    </select>
+    <select id="classFilter">
+      <option value="">כל הכיתות</option>
+    </select>
+  </div>
+
+  <div id="eventsContainer" class="events-container">
+    <div class="loading">טוען נתונים...</div>
+  </div>
+
+  <script>
+    // כתובת ה-CSV של גיליון ה-Looker המאוחד
+    const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT1TIwnott9Y7pTugeQ5Il-U00dUe5GE6Mcc7lRqfxuCBM/pub?gid=829069159&single=true&output=csv';
+
+    let allEvents = [];
+    let showPastEvents = false; // ברירת מחדל: לא מוצג
+
+    // אלמנטים ב-DOM
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsMenu = document.getElementById('settingsMenu');
+    const togglePastBtn = document.getElementById('togglePastBtn');
+    const toggleThemeBtn = document.getElementById('toggleThemeBtn');
+    const gradeFilter = document.getElementById('gradeFilter');
+    const classFilter = document.getElementById('classFilter');
+    const eventsContainer = document.getElementById('eventsContainer');
+
+    // ניהול תפריט הגדרות
+    settingsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      settingsMenu.classList.toggle('open');
+    });
+
+    document.addEventListener('click', () => {
+      settingsMenu.classList.remove('open');
+    });
+
+    // 1. הגדרת הצגת/הסתרת מבחני עבר
+    togglePastBtn.addEventListener('click', () => {
+      showPastEvents = !showPastEvents;
+      togglePastBtn.textContent = showPastEvents ? 'הסתר מבחנים בעבר' : 'הצג מבחנים בעבר';
+      renderEvents();
+    });
+
+    // 2. הגדרת שינוי ערכת נושא (שחור/לבן)
+    toggleThemeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('light-theme');
+      const isLight = document.body.classList.contains('light-theme');
+      toggleThemeBtn.textContent = isLight ? 'הפוך לשחור' : 'הפוך רקע ללבן';
+    });
+
+    // טעינת נתונים
+    async function loadData() {
+      try {
+        const response = await fetch(SHEET_CSV_URL);
+        const csvText = await response.text();
+        allEvents = parseCSV(csvText);
         
-        <div></div>
+        populateFilters();
+        renderEvents();
+      } catch (error) {
+        eventsContainer.innerHTML = '<div class="loading">אירעה שגיאה בטעינת הנתונים.</div>';
+        console.error('Error loading data:', error);
+      }
+    }
 
-        <div class="flex flex-col items-center max-w-lg px-4 gap-6">
-            <div class="w-48 md:w-64">
-                <img src="לוגו דרכא שקוף.png" alt="תיכון דרכא" class="w-full h-auto object-contain">
-            </div>
-            <div class="h-px w-24 bg-gray-800"></div>
-            <p class="text-xl md:text-2xl font-medium text-emerald-400 leading-relaxed" x-text="motivationalQuote"></p>
-        </div>
+    // פענוח ה-CSV
+    function parseCSV(text) {
+      const lines = text.trim().split('\n');
+      const events = [];
 
-        <div class="w-full max-w-xs mb-8">
-            <button @click="showSplash = false" class="relative w-full bg-gray-900 border border-gray-800 rounded-xl py-3 px-6 text-sm font-bold overflow-hidden text-white hover:border-gray-700 transition active:scale-[0.98]">
-                <div class="absolute inset-y-0 right-0 bg-emerald-600/20 progress-fill"></div>
-                <span class="relative z-10 flex items-center justify-center gap-2">
-                    דלג אל הלוח
-                    <svg class="w-4 h-4 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                </span>
-            </button>
-        </div>
-    </div>
+      for (let i = 0; i < lines.length; i++) {
+        const row = lines[i].split(',').map(cell => cell.trim().replace(/^"(.*)"$/, '$1'));
+        if (row.length >= 4) {
+          const dateStr = row[0];
+          const day = row[1];
+          const className = row[2];
+          const title = row[3];
 
-    <div>
-        <header class="border-b border-gray-800 bg-gray-900/50 backdrop-blur-md sticky top-0 z-50 px-4 py-3">
-            <div class="max-w-5xl mx-auto flex flex-row items-center justify-between gap-4">
-                
-                <div class="flex flex-col text-right">
-                    <h1 class="text-lg md:text-xl font-bold tracking-tight text-white">לוח בחינות ואירועים</h1>
-                    <p class="text-xs md:text-sm text-emerald-400/95 font-medium mt-0.5" x-text="motivationalQuote"></p>
-                </div>
+          // המרת תאריך מ-DD/MM/YYYY לאובייקט Date לצורך השוואה
+          const dateParts = dateStr.split('/');
+          let dateObj = null;
+          if (dateParts.length === 3) {
+            dateObj = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+          }
 
-                <div class="w-28 md:w-36 shrink-0 flex justify-end">
-                    <img src="לוגו דרכא שקוף.png" alt="תיכון דרכא" class="max-h-10 md:max-h-12 w-auto object-contain">
-                </div>
+          // חילוץ שם השכבה מתוך שם הכיתה (למשל "ט" מתוך "1'ט")
+          const gradeMatch = className.match(/[ט-יb-z]+/i);
+          const grade = gradeMatch ? gradeMatch[0] : '';
 
-            </div>
-
-            <div class="max-w-5xl mx-auto mt-3">
-                <div class="flex flex-wrap items-center gap-3 bg-gray-900 p-2 rounded-xl border border-gray-800/80 w-full">
-                    <div class="flex-1 min-w-[120px]">
-                        <select x-model="selectedLayer" @change="handleLayerChange()" class="w-full bg-gray-800 text-sm rounded-lg border border-gray-700 px-3 py-2 text-white focus:outline-none focus:border-emerald-500 transition">
-                            <option value="all">כלל בית הספר</option>
-                            <option value="ט">שכבת ט'</option>
-                            <option value="י">שכבת י'</option>
-                            <option value="יא">שכבת יא'</option>
-                            <option value="יב">שכבת יב'</option>
-                        </select>
-                    </div>
-
-                    <div class="flex-1 min-w-[110px]">
-                        <select x-model="selectedClass" :disabled="selectedLayer === 'all'" class="w-full bg-gray-800 text-sm rounded-lg border border-gray-700 px-3 py-2 text-white focus:outline-none focus:border-emerald-500 transition disabled:opacity-40 disabled:cursor-not-allowed">
-                            <option value="all">כל השכבה</option>
-                            <template x-for="cls in availableClasses" :key="cls">
-                                <option :value="cls" x-text="cls"></option>
-                            </template>
-                        </select>
-                    </div>
-
-                    <div class="w-full sm:w-52 relative">
-                        <input type="text" x-model="searchQuery" placeholder="חיפוש חופשי..." class="w-full bg-gray-800 text-sm rounded-lg border border-gray-700 pr-8 pl-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition">
-                        <span class="absolute right-2.5 top-2.5 text-gray-500">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <main class="max-w-5xl mx-auto px-4 py-6">
-            
-            <div x-show="loading" class="flex flex-col items-center justify-center py-20 gap-3">
-                <div class="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-gray-400 text-sm">טוען נתונים ומסנכרן את הלוח...</p>
-            </div>
-
-            <div x-show="!loading && error" class="bg-red-950/40 border border-red-800/60 text-red-200 p-4 rounded-xl text-center" x-text="error" x-cloak></div>
-
-            <div x-show="!loading && filteredEvents.length === 0" class="text-center py-16 bg-gray-900/20 border border-gray-800/60 rounded-xl" x-cloak>
-                <p class="text-gray-400">לא נמצאו בחינות או אירועים העונים על סינון זה.</p>
-            </div>
-
-            <div x-show="!loading && filteredEvents.length > 0" class="space-y-2" x-cloak>
-                <template x-for="event in filteredEvents" :key="event.id">
-                    <div class="flex items-center gap-3 p-3 bg-gray-900/60 hover:bg-gray-900 border border-gray-800 hover:border-gray-700/80 rounded-xl transition duration-150">
-                        
-                        <div class="flex items-center gap-2 bg-gray-800/80 border border-gray-700 px-3 py-1.5 rounded-lg shrink-0 text-xs sm:text-sm font-medium text-gray-200">
-                            <span x-text="event.formattedDate"></span>
-                            <span class="text-gray-500 font-normal">|</span>
-                            <span x-text="event.dayOfWeek" class="text-emerald-400 font-bold"></span>
-                        </div>
-
-                        <div class="flex-1 min-w-0 overflow-x-auto no-scrollbar">
-                            <div class="flex items-center gap-2.5 whitespace-nowrap w-max">
-                                <span class="text-sm sm:text-base text-gray-100 font-medium" x-text="event.title"></span>
-
-                                <span :class="event.isHoliday ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'" 
-                                      class="text-xs font-semibold px-2.5 py-0.5 rounded-md border shrink-0" 
-                                      x-text="event.targetDisplay">
-                                </span>
-                            </div>
-                        </div>
-
-                    </div>
-                </template>
-            </div>
-        </main>
-    </div>
-
-    <script>
-        function examsApp() {
-            return {
-                spreadsheetId: '1TIwnott9Y7pTugeQ5Il-U00dUe5GE6Mcc7lRqfxuCBM', 
-                loading: true,
-                error: null,
-                allEvents: [],
-                availableClasses: [],
-                selectedLayer: 'all',
-                selectedClass: 'all',
-                searchQuery: '',
-                motivationalQuote: '',
-                showSplash: true,
-                
-                quotes: [
-                    "ההשקעה של היום היא ההצלחה של מחר.",
-                    "הדרך להצלחה מתחילה בהחלטה לא לוותר!",
-                    "העתיד שלכם מתחיל בהחלטות שאתם מקבלים היום.",
-                    "אל תוותרו על החלום רק כי הדרך מאתגרת.",
-                    "האמינו בעצמכם, אתם מסוגלים ליותר ממה שאתם חושבים.",
-                    "אל תשוו את עצמכם לאחרים, התקדמו בקצב שלכם.",
-                    "אל תפחדו לטעות – כך לומדים, מתקדמים ומצליחים.",
-                    "כל יום הוא הזדמנות ללמוד משהו חדש."
-                ],
-
-                init() {
-                    this.motivationalQuote = this.quotes[Math.floor(Math.random() * this.quotes.length)];
-                    
-                    setTimeout(() => {
-                        this.showSplash = false;
-                    }, 3000);
-
-                    google.charts.load('current', {'packages':['corechart']});
-                    google.charts.setOnLoadCallback(() => this.fetchLookerData());
-                },
-
-                fetchLookerData() {
-                    this.loading = true;
-                    this.error = null;
-
-                    const queryUrl = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/gviz/tq?sheet=Looker&tq=SELECT*`;
-                    const query = new google.visualization.Query(queryUrl);
-
-                    query.send(response => {
-                        this.loading = false;
-                        if (response.isError()) {
-                            this.error = 'שגיאה במשיכת הנתונים. ודא שכרטיסיית Looker קיימת ושקובץ הגיליון מוגדר כציבורי.';
-                            return;
-                        }
-                        
-                        const dataTable = response.getDataTable();
-                        const numRows = dataTable.getNumberOfRows();
-                        const numCols = dataTable.getNumberOfColumns();
-                        const rawEvents = [];
-
-                        for (let colOffset = 0; colOffset < numCols; colOffset += 4) {
-                            for (let i = 0; i < numRows; i++) {
-                                const dateValue = dataTable.getValue(i, colOffset);   
-                                const dayValue = dataTable.getValue(i, colOffset + 1);    
-                                const classValue = dataTable.getValue(i, colOffset + 2);  
-                                const eventValue = dataTable.getValue(i, colOffset + 3);  
-
-                                if (!dateValue || !eventValue) continue;
-
-                                let rawDate = this.parseGoogleDate(dateValue);
-                                if (!rawDate) continue;
-
-                                const classStr = classValue ? String(classValue).trim() : '';
-                                const eventStr = String(eventValue).trim();
-
-                                const isHoliday = classStr.includes('חופש') || classStr.includes('חג') || classStr.includes('כללי') || 
-                                                  eventStr.includes('חופש') || eventStr.includes('חג');
-
-                                let layer = 'all';
-                                let specificClass = 'all';
-
-                                const cleanClassStr = classStr.replace(/['"׳]/g, '');
-
-                                if (/^ט\d+/.test(cleanClassStr)) {
-                                    layer = 'ט';
-                                    specificClass = classStr;
-                                } else if (/^יא\d+/.test(cleanClassStr)) {
-                                    layer = 'יא';
-                                    specificClass = classStr;
-                                } else if (/^יב\d+/.test(cleanClassStr)) {
-                                    layer = 'יב';
-                                    specificClass = classStr;
-                                } else if (/^י\d+/.test(cleanClassStr)) {
-                                    layer = 'י';
-                                    specificClass = classStr;
-                                } else {
-                                    if (cleanClassStr === 'ט') layer = 'ט';
-                                    else if (cleanClassStr === 'י') layer = 'י';
-                                    else if (cleanClassStr === 'יא') layer = 'יא';
-                                    else if (cleanClassStr === 'יב') layer = 'יב';
-                                }
-
-                                rawEvents.push({
-                                    dateObj: rawDate,
-                                    formattedDate: this.formatDate(rawDate),
-                                    dayOfWeek: dayValue || this.getDayName(rawDate),
-                                    title: eventStr,
-                                    layer: layer,
-                                    specificClass: specificClass,
-                                    isHoliday: isHoliday,
-                                    classRawValue: classStr
-                                });
-                            }
-                        }
-
-                        const groupedMap = {};
-                        rawEvents.forEach(event => {
-                            const dateKey = event.dateObj.getTime();
-                            const titleKey = event.title.toLowerCase().trim();
-                            const groupKey = `${dateKey}_${titleKey}`;
-
-                            if (!groupedMap[groupKey]) {
-                                groupedMap[groupKey] = {
-                                    dateObj: event.dateObj,
-                                    formattedDate: event.formattedDate,
-                                    dayOfWeek: event.dayOfWeek,
-                                    title: event.title,
-                                    isHoliday: event.isHoliday,
-                                    layers: new Set([event.layer]),
-                                    classes: new Set(event.specificClass !== 'all' ? [event.specificClass] : []),
-                                    rawTargets: new Set([event.classRawValue])
-                                };
-                            } else {
-                                groupedMap[groupKey].layers.add(event.layer);
-                                if (event.specificClass !== 'all') {
-                                    groupedMap[groupKey].classes.add(event.specificClass);
-                                }
-                                groupedMap[groupKey].rawTargets.add(event.classRawValue);
-                                if (event.isHoliday) {
-                                    groupedMap[groupKey].isHoliday = true;
-                                }
-                            }
-                        });
-
-                        this.allEvents = Object.values(groupedMap).map((g, idx) => {
-                            const classesArr = Array.from(g.classes).sort();
-                            const layersArr = Array.from(g.layers);
-                            const rawTargetsArr = Array.from(g.rawTargets).filter(t => t !== '');
-
-                            let targetDisplay = '';
-                            if (g.isHoliday) {
-                                targetDisplay = 'חופשה / מועד';
-                            } else if (classesArr.length > 0) {
-                                targetDisplay = classesArr.join(', ');
-                            } else if (rawTargetsArr.length > 0) {
-                                targetDisplay = rawTargetsArr.join(', ');
-                            } else {
-                                targetDisplay = 'כללי';
-                            }
-
-                            return {
-                                id: `grouped-${idx}-${g.dateObj.getTime()}`,
-                                dateObj: g.dateObj,
-                                formattedDate: g.formattedDate,
-                                dayOfWeek: g.dayOfWeek,
-                                title: g.title,
-                                isHoliday: g.isHoliday,
-                                layers: layersArr, 
-                                classes: classesArr, 
-                                targetDisplay: targetDisplay
-                            };
-                        }).sort((a, b) => a.dateObj - b.dateObj);
-
-                        this.handleLayerChange();
-                    });
-                },
-
-                handleLayerChange() {
-                    this.selectedClass = 'all';
-                    if (this.selectedLayer === 'all') {
-                        this.availableClasses = [];
-                        return;
-                    }
-                    
-                    let classesSet = new Set();
-                    this.allEvents.forEach(e => {
-                        if (e.layers.includes(this.selectedLayer)) {
-                            e.classes.forEach(c => classesSet.add(c));
-                        }
-                    });
-                    
-                    this.availableClasses = Array.from(classesSet).sort();
-                },
-
-                get filteredEvents() {
-                    return this.allEvents.filter(event => {
-                        if (this.selectedLayer !== 'all' && !event.layers.includes(this.selectedLayer)) return false;
-
-                        if (this.selectedClass !== 'all' && event.classes.length > 0 && !event.classes.includes(this.selectedClass)) return false;
-
-                        if (this.searchQuery.trim() !== '') {
-                            const query = this.searchQuery.toLowerCase();
-                            return event.title.toLowerCase().includes(query) || 
-                                   event.targetDisplay.toLowerCase().includes(query) ||
-                                   event.formattedDate.includes(query);
-                        }
-
-                        return true;
-                    });
-                },
-
-                parseGoogleDate(dateVal) {
-                    if (dateVal instanceof Date) return dateVal;
-                    if (typeof dateVal === 'string') {
-                        if (dateVal.startsWith('Date(')) {
-                            let parts = dateVal.match(/\d+/g);
-                            if (parts) return new Date(parts[0], parts[1], parts[2]);
-                        }
-                        let timestamp = Date.parse(dateVal);
-                        if (!isNaN(timestamp)) return new Date(timestamp);
-                    }
-                    return null;
-                },
-
-                formatDate(date) {
-                    return date.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' });
-                },
-
-                getDayName(date) {
-                    return date.toLocaleDateString('he-IL', { weekday: 'short' });
-                }
-            }
+          events.push({
+            dateStr,
+            day,
+            className,
+            title,
+            grade,
+            dateObj
+          });
         }
-    </script>
+      }
+      return events;
+    }
+
+    // מילוי ה-Select-ים של היררכיית השכבות והכיתות
+    function populateFilters() {
+      const grades = [...new Set(allEvents.map(e => e.grade))].filter(Boolean);
+      const classes = [...new Set(allEvents.map(e => e.className))].filter(Boolean);
+
+      grades.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g;
+        opt.textContent = `שכבה ${g}'`;
+        gradeFilter.appendChild(opt);
+      });
+
+      classes.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        classFilter.appendChild(opt);
+      });
+
+      gradeFilter.addEventListener('change', renderEvents);
+      classFilter.addEventListener('change', renderEvents);
+    }
+
+    // רינדור האירועים על המסך
+    function renderEvents() {
+      const selectedGrade = gradeFilter.value;
+      const selectedClass = classFilter.value;
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const filtered = allEvents.filter(e => {
+        // סינון שכבה וכיתה
+        if (selectedGrade && e.grade !== selectedGrade) return false;
+        if (selectedClass && e.className !== selectedClass) return false;
+
+        // סינון לפי תאריך (אם הסינון פעיל והאירוע חל בעבר)
+        if (!showPastEvents && e.dateObj && e.dateObj < today) {
+          return false;
+        }
+
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        eventsContainer.innerHTML = '<div class="loading">אין אירועים להצגה.</div>';
+        return;
+      }
+
+      eventsContainer.innerHTML = filtered.map(e => `
+        <div class="event-card">
+          <div class="event-details">
+            <div class="event-title">${e.title}</div>
+            <div class="event-meta">${e.day}, ${e.dateStr}</div>
+          </div>
+          <div class="event-class">${e.className}</div>
+        </div>
+      `).join('');
+    }
+
+    // הפעלה ראשונית
+    loadData();
+  </script>
 </body>
 </html>
