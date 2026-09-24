@@ -67,7 +67,7 @@
             <div class="max-w-5xl mx-auto flex flex-row items-center justify-between gap-4">
                 
                 <div class="flex items-center gap-3">
-                    <!-- כפתור גלגל שיניים להגדרות -->
+                    <!-- כפתור הגדרות -->
                     <div class="relative" @click.outside="showSettingsMenu = false">
                         <button @click="showSettingsMenu = !showSettingsMenu" 
                                 :class="isLightTheme ? 'hover:bg-slate-200 text-slate-700' : 'hover:bg-gray-800 text-gray-200'"
@@ -79,22 +79,38 @@
                             </svg>
                         </button>
 
-                        <!-- תפריט הגדרות צף -->
+                        <!-- תפריט הגדרות -->
                         <div x-show="showSettingsMenu" 
                              x-cloak
                              x-transition
                              :class="isLightTheme ? 'bg-white border-slate-200 shadow-xl text-slate-800' : 'bg-gray-900 border-gray-800 shadow-2xl text-gray-100'"
-                             class="absolute right-0 mt-2 w-56 border rounded-xl overflow-hidden z-50 text-sm">
-                            <button @click="showPastEvents = !showPastEvents; showSettingsMenu = false" 
+                             class="absolute right-0 mt-2 w-60 border rounded-xl overflow-hidden z-50 text-sm">
+                            
+                            <button @click="showHolidays = !showHolidays" 
                                     :class="isLightTheme ? 'hover:bg-slate-100 border-slate-100' : 'hover:bg-gray-800 border-gray-800'"
                                     class="w-full text-right px-4 py-3 border-b transition flex items-center justify-between">
-                                <span x-text="showPastEvents ? 'הסתר מבחנים בעבר' : 'הצג מבחנים בעבר'"></span>
-                                <span class="text-xs text-emerald-500" x-text="showPastEvents ? '✓' : ''"></span>
+                                <span>הצג חופשות</span>
+                                <span class="text-xs text-amber-500 font-bold" x-text="showHolidays ? '✓' : ''"></span>
                             </button>
+
+                            <button @click="showGeneralEvents = !showGeneralEvents" 
+                                    :class="isLightTheme ? 'hover:bg-slate-100 border-slate-100' : 'hover:bg-gray-800 border-gray-800'"
+                                    class="w-full text-right px-4 py-3 border-b transition flex items-center justify-between">
+                                <span>הצג אירועים כלליים</span>
+                                <span class="text-xs text-indigo-400 font-bold" x-text="showGeneralEvents ? '✓' : ''"></span>
+                            </button>
+
+                            <button @click="showPastEvents = !showPastEvents" 
+                                    :class="isLightTheme ? 'hover:bg-slate-100 border-slate-100' : 'hover:bg-gray-800 border-gray-800'"
+                                    class="w-full text-right px-4 py-3 border-b transition flex items-center justify-between">
+                                <span x-text="showPastEvents ? 'הסתר אירועי עבר' : 'הצג אירועי עבר'"></span>
+                                <span class="text-xs text-emerald-500 font-bold" x-text="showPastEvents ? '✓' : ''"></span>
+                            </button>
+
                             <button @click="isLightTheme = !isLightTheme; showSettingsMenu = false" 
                                     :class="isLightTheme ? 'hover:bg-slate-100' : 'hover:bg-gray-800'"
                                     class="w-full text-right px-4 py-3 transition flex items-center justify-between">
-                                <span x-text="isLightTheme ? 'הפוך לשחור' : 'הפוך רקע ללבן'"></span>
+                                <span x-text="isLightTheme ? 'הפוך למצב כהה' : 'הפוך למצב בהיר'"></span>
                             </button>
                         </div>
                     </div>
@@ -157,9 +173,15 @@
 
             <div x-show="!loading && filteredEvents.length > 0" class="space-y-2" x-cloak>
                 <template x-for="event in filteredEvents" :key="event.id">
-                    <div :class="isLightTheme ? 'bg-white border-slate-200 hover:border-slate-300' : 'bg-gray-900/60 hover:bg-gray-900 border-gray-800 hover:border-gray-700/80'" class="flex items-center gap-3 p-3 border rounded-xl transition duration-150">
+                    <div :class="{
+                            'bg-amber-500/10 border-amber-500/30 hover:border-amber-500/50': event.isHoliday,
+                            'bg-indigo-500/10 border-indigo-500/30 hover:border-indigo-500/50': event.isGeneral,
+                            'bg-white border-slate-200 hover:border-slate-300': !event.isHoliday && !event.isGeneral && isLightTheme,
+                            'bg-gray-900/60 hover:bg-gray-900 border-gray-800 hover:border-gray-700/80': !event.isHoliday && !event.isGeneral && !isLightTheme
+                         }" 
+                         class="flex items-center gap-3 p-3 border rounded-xl transition duration-150">
                         
-                        <div :class="isLightTheme ? 'bg-slate-100 border-slate-300 text-slate-700' : 'bg-gray-800/80 border-gray-700 text-gray-200'" class="flex items-center gap-2 border px-3 py-1.5 rounded-lg shrink-0 text-xs sm:text-sm font-medium">
+                        <div :class="isLightTheme ? 'bg-slate-100/80 border-slate-300 text-slate-700' : 'bg-gray-800/80 border-gray-700 text-gray-200'" class="flex items-center gap-2 border px-3 py-1.5 rounded-lg shrink-0 text-xs sm:text-sm font-medium">
                             <span x-text="event.formattedDate"></span>
                             <span class="text-gray-400 font-normal">|</span>
                             <span x-text="event.dayOfWeek" class="text-emerald-500 font-bold"></span>
@@ -169,7 +191,12 @@
                             <div class="flex items-center gap-2.5 whitespace-nowrap w-max">
                                 <span :class="isLightTheme ? 'text-slate-800' : 'text-gray-100'" class="text-sm sm:text-base font-medium" x-text="event.title"></span>
 
-                                <span :class="event.isHoliday ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'" 
+                                <!-- תגית סיווג -->
+                                <span :class="{
+                                        'bg-amber-500/20 text-amber-500 border-amber-500/30': event.isHoliday,
+                                        'bg-indigo-500/20 text-indigo-400 border-indigo-500/30': event.isGeneral,
+                                        'bg-emerald-500/10 text-emerald-500 border-emerald-500/20': !event.isHoliday && !event.isGeneral
+                                      }" 
                                       class="text-xs font-semibold px-2.5 py-0.5 rounded-md border shrink-0" 
                                       x-text="event.targetDisplay">
                                 </span>
@@ -196,8 +223,10 @@
                 motivationalQuote: '',
                 showSplash: true,
                 showSettingsMenu: false,
-                showPastEvents: false, // ברירת מחדל: לא מציג אירועי עבר
-                isLightTheme: false,    // ברירת מחדל: מצב כהה
+                showPastEvents: false,     
+                showHolidays: false,        
+                showGeneralEvents: false,   
+                isLightTheme: false,       
                 
                 quotes: [
                     "ההשקעה של היום היא ההצלחה של מחר.",
@@ -225,136 +254,177 @@
                     this.loading = true;
                     this.error = null;
 
-                    const queryUrl = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/gviz/tq?sheet=Looker&tq=SELECT*`;
-                    const query = new google.visualization.Query(queryUrl);
+                    // פנייה ישירה באמצעות כתובת ה-CSV הציבורית
+                    const urlLooker = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/gviz/tq?sheet=Looker&tq=` + encodeURIComponent("SELECT A, B, C, D");
+                    const urlGeneral = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/gviz/tq?sheet=General&tq=` + encodeURIComponent("SELECT A, B, C, D");
 
-                    query.send(response => {
-                        this.loading = false;
-                        if (response.isError()) {
-                            this.error = 'שגיאה במשיכת הנתונים. ודא שכרטיסיית Looker קיימת ושקובץ הגיליון מוגדר כציבורי.';
-                            return;
+                    const queryLooker = new google.visualization.Query(urlLooker);
+                    const queryGeneral = new google.visualization.Query(urlGeneral);
+
+                    let rawEvents = [];
+                    let pending = 2;
+
+                    const checkDone = () => {
+                        pending--;
+                        if (pending === 0) {
+                            this.processEvents(rawEvents);
                         }
-                        
-                        const dataTable = response.getDataTable();
-                        const numRows = dataTable.getNumberOfRows();
-                        const numCols = dataTable.getNumberOfColumns();
-                        const rawEvents = [];
+                    };
 
-                        for (let colOffset = 0; colOffset < numCols; colOffset += 4) {
-                            for (let i = 0; i < numRows; i++) {
-                                const dateValue = dataTable.getValue(i, colOffset);   
-                                const dayValue = dataTable.getValue(i, colOffset + 1);    
-                                const classValue = dataTable.getValue(i, colOffset + 2);  
-                                const eventValue = dataTable.getValue(i, colOffset + 3);  
+                    // 1. קריאת גיליון Looker (מבחנים)
+                    queryLooker.send(response => {
+                        if (!response.isError()) {
+                            const dt = response.getDataTable();
+                            const rows = dt.getNumberOfRows();
+                            for (let i = 0; i < rows; i++) {
+                                const dateVal = dt.getValue(i, 0);
+                                const dayVal = dt.getValue(i, 1);
+                                const classVal = dt.getValue(i, 2);
+                                const eventVal = dt.getValue(i, 3);
 
-                                if (!dateValue || !eventValue) continue;
+                                if (dateVal && eventVal) {
+                                    let rawDate = this.parseGoogleDate(dateVal);
+                                    if (rawDate) {
+                                        const classStr = classVal ? String(classVal).trim() : '';
+                                        const eventStr = String(eventVal).trim();
+                                        const cleanClassStr = classStr.replace(/['"׳]/g, '');
 
-                                let rawDate = this.parseGoogleDate(dateValue);
-                                if (!rawDate) continue;
+                                        let layer = 'all';
+                                        let specificClass = 'all';
 
-                                const classStr = classValue ? String(classValue).trim() : '';
-                                const eventStr = String(eventValue).trim();
+                                        if (/^ט\d+/.test(cleanClassStr)) { layer = 'ט'; specificClass = classStr; }
+                                        else if (/^יא\d+/.test(cleanClassStr)) { layer = 'יא'; specificClass = classStr; }
+                                        else if (/^יב\d+/.test(cleanClassStr)) { layer = 'יב'; specificClass = classStr; }
+                                        else if (/^י\d+/.test(cleanClassStr)) { layer = 'י'; specificClass = classStr; }
+                                        else {
+                                            if (cleanClassStr === 'ט') layer = 'ט';
+                                            else if (cleanClassStr === 'י') layer = 'י';
+                                            else if (cleanClassStr === 'יא') layer = 'יא';
+                                            else if (cleanClassStr === 'יב') layer = 'יב';
+                                        }
 
-                                const isHoliday = classStr.includes('חופש') || classStr.includes('חג') || classStr.includes('כללי') || 
-                                                  eventStr.includes('חופש') || eventStr.includes('חג');
-
-                                let layer = 'all';
-                                let specificClass = 'all';
-
-                                const cleanClassStr = classStr.replace(/['"׳]/g, '');
-
-                                if (/^ט\d+/.test(cleanClassStr)) {
-                                    layer = 'ט';
-                                    specificClass = classStr;
-                                } else if (/^יא\d+/.test(cleanClassStr)) {
-                                    layer = 'יא';
-                                    specificClass = classStr;
-                                } else if (/^יב\d+/.test(cleanClassStr)) {
-                                    layer = 'יב';
-                                    specificClass = classStr;
-                                } else if (/^י\d+/.test(cleanClassStr)) {
-                                    layer = 'י';
-                                    specificClass = classStr;
-                                } else {
-                                    if (cleanClassStr === 'ט') layer = 'ט';
-                                    else if (cleanClassStr === 'י') layer = 'י';
-                                    else if (cleanClassStr === 'יא') layer = 'יא';
-                                    else if (cleanClassStr === 'יב') layer = 'יב';
+                                        rawEvents.push({
+                                            dateObj: rawDate,
+                                            formattedDate: this.formatDate(rawDate),
+                                            dayOfWeek: dayVal || this.getDayName(rawDate),
+                                            title: eventStr,
+                                            layer: layer,
+                                            specificClass: specificClass,
+                                            isHoliday: false,
+                                            isGeneral: false,
+                                            classRawValue: classStr
+                                        });
+                                    }
                                 }
-
-                                rawEvents.push({
-                                    dateObj: rawDate,
-                                    formattedDate: this.formatDate(rawDate),
-                                    dayOfWeek: dayValue || this.getDayName(rawDate),
-                                    title: eventStr,
-                                    layer: layer,
-                                    specificClass: specificClass,
-                                    isHoliday: isHoliday,
-                                    classRawValue: classStr
-                                });
                             }
                         }
-
-                        const groupedMap = {};
-                        rawEvents.forEach(event => {
-                            const dateKey = event.dateObj.getTime();
-                            const titleKey = event.title.toLowerCase().trim();
-                            const groupKey = `${dateKey}_${titleKey}`;
-
-                            if (!groupedMap[groupKey]) {
-                                groupedMap[groupKey] = {
-                                    dateObj: event.dateObj,
-                                    formattedDate: event.formattedDate,
-                                    dayOfWeek: event.dayOfWeek,
-                                    title: event.title,
-                                    isHoliday: event.isHoliday,
-                                    layers: new Set([event.layer]),
-                                    classes: new Set(event.specificClass !== 'all' ? [event.specificClass] : []),
-                                    rawTargets: new Set([event.classRawValue])
-                                };
-                            } else {
-                                groupedMap[groupKey].layers.add(event.layer);
-                                if (event.specificClass !== 'all') {
-                                    groupedMap[groupKey].classes.add(event.specificClass);
-                                }
-                                groupedMap[groupKey].rawTargets.add(event.classRawValue);
-                                if (event.isHoliday) {
-                                    groupedMap[groupKey].isHoliday = true;
-                                }
-                            }
-                        });
-
-                        this.allEvents = Object.values(groupedMap).map((g, idx) => {
-                            const classesArr = Array.from(g.classes).sort();
-                            const layersArr = Array.from(g.layers);
-                            const rawTargetsArr = Array.from(g.rawTargets).filter(t => t !== '');
-
-                            let targetDisplay = '';
-                            if (g.isHoliday) {
-                                targetDisplay = 'חופשה / מועד';
-                            } else if (classesArr.length > 0) {
-                                targetDisplay = classesArr.join(', ');
-                            } else if (rawTargetsArr.length > 0) {
-                                targetDisplay = rawTargetsArr.join(', ');
-                            } else {
-                                targetDisplay = 'כללי';
-                            }
-
-                            return {
-                                id: `grouped-${idx}-${g.dateObj.getTime()}`,
-                                dateObj: g.dateObj,
-                                formattedDate: g.formattedDate,
-                                dayOfWeek: g.dayOfWeek,
-                                title: g.title,
-                                isHoliday: g.isHoliday,
-                                layers: layersArr, 
-                                classes: classesArr, 
-                                targetDisplay: targetDisplay
-                            };
-                        }).sort((a, b) => a.dateObj - b.dateObj);
-
-                        this.handleLayerChange();
+                        checkDone();
                     });
+
+                    // 2. קריאת גיליון General (חופשות וכללי)
+                    queryGeneral.send(response => {
+                        if (!response.isError()) {
+                            const dt = response.getDataTable();
+                            const rows = dt.getNumberOfRows();
+                            for (let i = 0; i < rows; i++) {
+                                const dateVal = dt.getValue(i, 0);
+                                const dayVal = dt.getValue(i, 1);
+                                const typeVal = dt.getValue(i, 2);
+                                const eventVal = dt.getValue(i, 3);
+
+                                if (dateVal && eventVal) {
+                                    let rawDate = this.parseGoogleDate(dateVal);
+                                    if (rawDate) {
+                                        const typeStr = typeVal ? String(typeVal).trim() : '';
+                                        const eventStr = String(eventVal).trim();
+
+                                        const isHoliday = typeStr.includes('חופש');
+                                        const isGeneral = !isHoliday; // כל אירוע שאינו חופש בגיליון זה מסווג ככללי
+
+                                        rawEvents.push({
+                                            dateObj: rawDate,
+                                            formattedDate: this.formatDate(rawDate),
+                                            dayOfWeek: dayVal || this.getDayName(rawDate),
+                                            title: eventStr,
+                                            layer: 'all',
+                                            specificClass: 'all',
+                                            isHoliday: isHoliday,
+                                            isGeneral: isGeneral,
+                                            classRawValue: typeStr
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        checkDone();
+                    });
+                },
+
+                processEvents(rawEvents) {
+                    this.loading = false;
+
+                    const groupedMap = {};
+                    rawEvents.forEach(event => {
+                        const dateKey = event.dateObj.getTime();
+                        const titleKey = event.title.toLowerCase().trim();
+                        const groupKey = `${dateKey}_${titleKey}`;
+
+                        if (!groupedMap[groupKey]) {
+                            groupedMap[groupKey] = {
+                                dateObj: event.dateObj,
+                                formattedDate: event.formattedDate,
+                                dayOfWeek: event.dayOfWeek,
+                                title: event.title,
+                                isHoliday: event.isHoliday,
+                                isGeneral: event.isGeneral,
+                                layers: new Set([event.layer]),
+                                classes: new Set(event.specificClass !== 'all' ? [event.specificClass] : []),
+                                rawTargets: new Set([event.classRawValue])
+                            };
+                        } else {
+                            groupedMap[groupKey].layers.add(event.layer);
+                            if (event.specificClass !== 'all') {
+                                groupedMap[groupKey].classes.add(event.specificClass);
+                            }
+                            groupedMap[groupKey].rawTargets.add(event.classRawValue);
+                            if (event.isHoliday) groupedMap[groupKey].isHoliday = true;
+                            if (event.isGeneral) groupedMap[groupKey].isGeneral = true;
+                        }
+                    });
+
+                    this.allEvents = Object.values(groupedMap).map((g, idx) => {
+                        const classesArr = Array.from(g.classes).sort();
+                        const layersArr = Array.from(g.layers);
+                        const rawTargetsArr = Array.from(g.rawTargets).filter(t => t !== '');
+
+                        let targetDisplay = '';
+                        if (g.isHoliday) {
+                            targetDisplay = 'חופש';
+                        } else if (g.isGeneral) {
+                            targetDisplay = 'כללי';
+                        } else if (classesArr.length > 0) {
+                            targetDisplay = classesArr.join(', ');
+                        } else if (rawTargetsArr.length > 0) {
+                            targetDisplay = rawTargetsArr.join(', ');
+                        } else {
+                            targetDisplay = 'כללי';
+                        }
+
+                        return {
+                            id: `grouped-${idx}-${g.dateObj.getTime()}`,
+                            dateObj: g.dateObj,
+                            formattedDate: g.formattedDate,
+                            dayOfWeek: g.dayOfWeek,
+                            title: g.title,
+                            isHoliday: g.isHoliday,
+                            isGeneral: g.isGeneral,
+                            layers: layersArr, 
+                            classes: classesArr, 
+                            targetDisplay: targetDisplay
+                        };
+                    }).sort((a, b) => a.dateObj - b.dateObj);
+
+                    this.handleLayerChange();
                 },
 
                 handleLayerChange() {
@@ -379,15 +449,23 @@
                     today.setHours(0, 0, 0, 0);
 
                     return this.allEvents.filter(event => {
-                        // סינון אירועי עבר (מציג רק מהיום והלאה, אלא אם כן סומן "הצג מבחנים בעבר")
+                        // סינון לפי תאריכי עבר
                         if (!this.showPastEvents && event.dateObj && event.dateObj < today) {
                             return false;
                         }
 
-                        if (this.selectedLayer !== 'all' && !event.layers.includes(this.selectedLayer)) return false;
+                        // סינון מבוסס תפריט ההגדרות עבור חופשות ואירועים כלליים
+                        if (event.isHoliday) {
+                            if (!this.showHolidays) return false;
+                        } else if (event.isGeneral) {
+                            if (!this.showGeneralEvents) return false;
+                        } else {
+                            // סינון לפי שכבה וכיתה רק עבור אירועי בחינות
+                            if (this.selectedLayer !== 'all' && !event.layers.includes(this.selectedLayer)) return false;
+                            if (this.selectedClass !== 'all' && event.classes.length > 0 && !event.classes.includes(this.selectedClass)) return false;
+                        }
 
-                        if (this.selectedClass !== 'all' && event.classes.length > 0 && !event.classes.includes(this.selectedClass)) return false;
-
+                        // חיפוש חופשי
                         if (this.searchQuery.trim() !== '') {
                             const query = this.searchQuery.toLowerCase();
                             return event.title.toLowerCase().includes(query) || 
@@ -401,11 +479,26 @@
 
                 parseGoogleDate(dateVal) {
                     if (dateVal instanceof Date) return dateVal;
+
+                    if (typeof dateVal === 'number') {
+                        return new Date(Math.round((dateVal - 25569) * 86400 * 1000));
+                    }
+
                     if (typeof dateVal === 'string') {
                         if (dateVal.startsWith('Date(')) {
                             let parts = dateVal.match(/\d+/g);
                             if (parts) return new Date(parts[0], parts[1], parts[2]);
                         }
+
+                        let parts = dateVal.split(/[\/\.-]/);
+                        if (parts.length === 3) {
+                            let day = parseInt(parts[0], 10);
+                            let month = parseInt(parts[1], 10) - 1;
+                            let year = parseInt(parts[2], 10);
+                            if (year < 100) year += 2000;
+                            return new Date(year, month, day);
+                        }
+
                         let timestamp = Date.parse(dateVal);
                         if (!isNaN(timestamp)) return new Date(timestamp);
                     }
@@ -419,7 +512,7 @@
                 getDayName(date) {
                     return date.toLocaleDateString('he-IL', { weekday: 'short' });
                 }
-            }
+            };
         }
     </script>
 </body>
