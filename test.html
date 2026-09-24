@@ -254,7 +254,6 @@
                     this.loading = true;
                     this.error = null;
 
-                    // שאילתה בודדת לגיליון Exams
                     const urlExams = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/gviz/tq?sheet=Exams&tq=` + encodeURIComponent("SELECT A, B, C, D");
                     const query = new google.visualization.Query(urlExams);
 
@@ -287,18 +286,16 @@
                                     let layer = 'all';
                                     let specificClass = 'all';
 
-                                    if (!isHoliday && !isGeneral) {
-                                        const cleanStr = typeOrClassStr.replace(/['"׳]/g, '');
-                                        if (/^ט\d+/.test(cleanStr)) { layer = 'ט'; specificClass = typeOrClassStr; }
-                                        else if (/^יא\d+/.test(cleanStr)) { layer = 'יא'; specificClass = typeOrClassStr; }
-                                        else if (/^יב\d+/.test(cleanStr)) { layer = 'יב'; specificClass = typeOrClassStr; }
-                                        else if (/^י\d+/.test(cleanStr)) { layer = 'י'; specificClass = typeOrClassStr; }
-                                        else {
-                                            if (cleanStr === 'ט') layer = 'ט';
-                                            else if (cleanStr === 'י') layer = 'י';
-                                            else if (cleanStr === 'יא') layer = 'יא';
-                                            else if (cleanStr === 'יב') layer = 'יב';
-                                        }
+                                    // זיהוי שכבות וכיתות
+                                    const cleanStr = typeOrClassStr.replace(/['"׳]/g, '');
+                                    
+                                    if (cleanStr.includes('ט')) layer = 'ט';
+                                    else if (cleanStr.includes('יא')) layer = 'יא';
+                                    else if (cleanStr.includes('יב')) layer = 'יב';
+                                    else if (cleanStr.includes('י')) layer = 'י';
+
+                                    if (/^(ט|י|יא|יב)\d+/.test(cleanStr)) {
+                                        specificClass = typeOrClassStr;
                                     }
 
                                     rawEvents.push({
@@ -414,15 +411,18 @@
                             return false;
                         }
 
-                        // סינון לפי הגדרות תפריט (חופש/כללי)
-                        if (event.isHoliday) {
-                            if (!this.showHolidays) return false;
-                        } else if (event.isGeneral) {
-                            if (!this.showGeneralEvents) return false;
-                        } else {
-                            // סינון לפי שכבה וכיתה בלבד עבור מבחנים רגילים
-                            if (this.selectedLayer !== 'all' && !event.layers.includes(this.selectedLayer)) return false;
-                            if (this.selectedClass !== 'all' && event.classes.length > 0 && !event.classes.includes(this.selectedClass)) return false;
+                        // בדיקת מתגי הגדרות עבור חופש וכללי
+                        if (event.isHoliday && !this.showHolidays) return false;
+                        if (event.isGeneral && !this.showGeneralEvents) return false;
+
+                        // סינון לפי שכבה וכיתה (עבור מבחנים ואירועי שכבה)
+                        if (!event.isHoliday && !event.isGeneral) {
+                            if (this.selectedLayer !== 'all' && !event.layers.includes(this.selectedLayer)) {
+                                return false;
+                            }
+                            if (this.selectedClass !== 'all' && event.classes.length > 0 && !event.classes.includes(this.selectedClass)) {
+                                return false;
+                            }
                         }
 
                         // חיפוש חופשי
