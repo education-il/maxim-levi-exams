@@ -247,116 +247,76 @@
                     }, 3000);
 
                     google.charts.load('current', {'packages':['corechart']});
-                    google.charts.setOnLoadCallback(() => this.fetchLookerData());
+                    google.charts.setOnLoadCallback(() => this.fetchExamsData());
                 },
 
-                fetchLookerData() {
+                fetchExamsData() {
                     this.loading = true;
                     this.error = null;
 
-                    // פנייה ישירה באמצעות כתובת ה-CSV הציבורית
-                    const urlLooker = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/gviz/tq?sheet=Looker&tq=` + encodeURIComponent("SELECT A, B, C, D");
-                    const urlGeneral = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/gviz/tq?sheet=General&tq=` + encodeURIComponent("SELECT A, B, C, D");
+                    // שאילתה בודדת לגיליון Exams
+                    const urlExams = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/gviz/tq?sheet=Exams&tq=` + encodeURIComponent("SELECT A, B, C, D");
+                    const query = new google.visualization.Query(urlExams);
 
-                    const queryLooker = new google.visualization.Query(urlLooker);
-                    const queryGeneral = new google.visualization.Query(urlGeneral);
-
-                    let rawEvents = [];
-                    let pending = 2;
-
-                    const checkDone = () => {
-                        pending--;
-                        if (pending === 0) {
-                            this.processEvents(rawEvents);
+                    query.send(response => {
+                        if (response.isError()) {
+                            this.error = "שגיאה בטעינת הנתונים: " + response.getMessage();
+                            this.loading = false;
+                            return;
                         }
-                    };
 
-                    // 1. קריאת גיליון Looker (מבחנים)
-                    queryLooker.send(response => {
-                        if (!response.isError()) {
-                            const dt = response.getDataTable();
-                            const rows = dt.getNumberOfRows();
-                            for (let i = 0; i < rows; i++) {
-                                const dateVal = dt.getValue(i, 0);
-                                const dayVal = dt.getValue(i, 1);
-                                const classVal = dt.getValue(i, 2);
-                                const eventVal = dt.getValue(i, 3);
+                        const dt = response.getDataTable();
+                        const rows = dt.getNumberOfRows();
+                        let rawEvents = [];
 
-                                if (dateVal && eventVal) {
-                                    let rawDate = this.parseGoogleDate(dateVal);
-                                    if (rawDate) {
-                                        const classStr = classVal ? String(classVal).trim() : '';
-                                        const eventStr = String(eventVal).trim();
-                                        const cleanClassStr = classStr.replace(/['"׳]/g, '');
+                        for (let i = 0; i < rows; i++) {
+                            const dateVal = dt.getValue(i, 0);
+                            const dayVal = dt.getValue(i, 1);
+                            const classVal = dt.getValue(i, 2);
+                            const eventVal = dt.getValue(i, 3);
 
-                                        let layer = 'all';
-                                        let specificClass = 'all';
+                            if (dateVal && eventVal) {
+                                let rawDate = this.parseGoogleDate(dateVal);
+                                if (rawDate) {
+                                    const typeOrClassStr = classVal ? String(classVal).trim() : '';
+                                    const eventStr = String(eventVal).trim();
 
-                                        if (/^ט\d+/.test(cleanClassStr)) { layer = 'ט'; specificClass = classStr; }
-                                        else if (/^יא\d+/.test(cleanClassStr)) { layer = 'יא'; specificClass = classStr; }
-                                        else if (/^יב\d+/.test(cleanClassStr)) { layer = 'יב'; specificClass = classStr; }
-                                        else if (/^י\d+/.test(cleanClassStr)) { layer = 'י'; specificClass = classStr; }
+                                    const isHoliday = typeOrClassStr.includes('חופש');
+                                    const isGeneral = typeOrClassStr.includes('כללי');
+
+                                    let layer = 'all';
+                                    let specificClass = 'all';
+
+                                    if (!isHoliday && !isGeneral) {
+                                        const cleanStr = typeOrClassStr.replace(/['"׳]/g, '');
+                                        if (/^ט\d+/.test(cleanStr)) { layer = 'ט'; specificClass = typeOrClassStr; }
+                                        else if (/^יא\d+/.test(cleanStr)) { layer = 'יא'; specificClass = typeOrClassStr; }
+                                        else if (/^יב\d+/.test(cleanStr)) { layer = 'יב'; specificClass = typeOrClassStr; }
+                                        else if (/^י\d+/.test(cleanStr)) { layer = 'י'; specificClass = typeOrClassStr; }
                                         else {
-                                            if (cleanClassStr === 'ט') layer = 'ט';
-                                            else if (cleanClassStr === 'י') layer = 'י';
-                                            else if (cleanClassStr === 'יא') layer = 'יא';
-                                            else if (cleanClassStr === 'יב') layer = 'יב';
+                                            if (cleanStr === 'ט') layer = 'ט';
+                                            else if (cleanStr === 'י') layer = 'י';
+                                            else if (cleanStr === 'יא') layer = 'יא';
+                                            else if (cleanStr === 'יב') layer = 'יב';
                                         }
-
-                                        rawEvents.push({
-                                            dateObj: rawDate,
-                                            formattedDate: this.formatDate(rawDate),
-                                            dayOfWeek: dayVal || this.getDayName(rawDate),
-                                            title: eventStr,
-                                            layer: layer,
-                                            specificClass: specificClass,
-                                            isHoliday: false,
-                                            isGeneral: false,
-                                            classRawValue: classStr
-                                        });
                                     }
+
+                                    rawEvents.push({
+                                        dateObj: rawDate,
+                                        formattedDate: this.formatDate(rawDate),
+                                        dayOfWeek: dayVal || this.getDayName(rawDate),
+                                        title: eventStr,
+                                        layer: layer,
+                                        specificClass: specificClass,
+                                        isHoliday: isHoliday,
+                                        isGeneral: isGeneral,
+                                        classRawValue: typeOrClassStr
+                                    });
                                 }
                             }
                         }
-                        checkDone();
-                    });
 
-                    // 2. קריאת גיליון General (חופשות וכללי)
-                    queryGeneral.send(response => {
-                        if (!response.isError()) {
-                            const dt = response.getDataTable();
-                            const rows = dt.getNumberOfRows();
-                            for (let i = 0; i < rows; i++) {
-                                const dateVal = dt.getValue(i, 0);
-                                const dayVal = dt.getValue(i, 1);
-                                const typeVal = dt.getValue(i, 2);
-                                const eventVal = dt.getValue(i, 3);
-
-                                if (dateVal && eventVal) {
-                                    let rawDate = this.parseGoogleDate(dateVal);
-                                    if (rawDate) {
-                                        const typeStr = typeVal ? String(typeVal).trim() : '';
-                                        const eventStr = String(eventVal).trim();
-
-                                        const isHoliday = typeStr.includes('חופש');
-                                        const isGeneral = !isHoliday; // כל אירוע שאינו חופש בגיליון זה מסווג ככללי
-
-                                        rawEvents.push({
-                                            dateObj: rawDate,
-                                            formattedDate: this.formatDate(rawDate),
-                                            dayOfWeek: dayVal || this.getDayName(rawDate),
-                                            title: eventStr,
-                                            layer: 'all',
-                                            specificClass: 'all',
-                                            isHoliday: isHoliday,
-                                            isGeneral: isGeneral,
-                                            classRawValue: typeStr
-                                        });
-                                    }
-                                }
-                            }
-                        }
-                        checkDone();
+                        this.processEvents(rawEvents);
                     });
                 },
 
@@ -449,18 +409,18 @@
                     today.setHours(0, 0, 0, 0);
 
                     return this.allEvents.filter(event => {
-                        // סינון לפי תאריכי עבר
+                        // הסתרת אירועי עבר
                         if (!this.showPastEvents && event.dateObj && event.dateObj < today) {
                             return false;
                         }
 
-                        // סינון מבוסס תפריט ההגדרות עבור חופשות ואירועים כלליים
+                        // סינון לפי הגדרות תפריט (חופש/כללי)
                         if (event.isHoliday) {
                             if (!this.showHolidays) return false;
                         } else if (event.isGeneral) {
                             if (!this.showGeneralEvents) return false;
                         } else {
-                            // סינון לפי שכבה וכיתה רק עבור אירועי בחינות
+                            // סינון לפי שכבה וכיתה בלבד עבור מבחנים רגילים
                             if (this.selectedLayer !== 'all' && !event.layers.includes(this.selectedLayer)) return false;
                             if (this.selectedClass !== 'all' && event.classes.length > 0 && !event.classes.includes(this.selectedClass)) return false;
                         }
