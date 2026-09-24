@@ -254,6 +254,7 @@
                     this.loading = true;
                     this.error = null;
 
+                    // פנייה ישירה באמצעות כתובת ה-CSV הציבורית
                     const urlLooker = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/gviz/tq?sheet=Looker&tq=` + encodeURIComponent("SELECT A, B, C, D");
                     const urlGeneral = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/gviz/tq?sheet=General&tq=` + encodeURIComponent("SELECT A, B, C, D");
 
@@ -270,7 +271,7 @@
                         }
                     };
 
-                    // 1. קריאת גיליון Looker (בחינות)
+                    // 1. קריאת גיליון Looker (מבחנים)
                     queryLooker.send(response => {
                         if (!response.isError()) {
                             const dt = response.getDataTable();
@@ -320,7 +321,7 @@
                         checkDone();
                     });
 
-                    // 2. קריאת גיליון General (חופשות ואירועים כלליים)
+                    // 2. קריאת גיליון General (חופשות וכללי)
                     queryGeneral.send(response => {
                         if (!response.isError()) {
                             const dt = response.getDataTable();
@@ -337,8 +338,8 @@
                                         const typeStr = typeVal ? String(typeVal).trim() : '';
                                         const eventStr = String(eventVal).trim();
 
-                                        const isHoliday = typeStr === 'חופש';
-                                        const isGeneral = typeStr === 'כללי';
+                                        const isHoliday = typeStr.includes('חופש');
+                                        const isGeneral = !isHoliday; // כל אירוע שאינו חופש בגיליון זה מסווג ככללי
 
                                         rawEvents.push({
                                             dateObj: rawDate,
@@ -448,23 +449,23 @@
                     today.setHours(0, 0, 0, 0);
 
                     return this.allEvents.filter(event => {
+                        // סינון לפי תאריכי עבר
                         if (!this.showPastEvents && event.dateObj && event.dateObj < today) {
                             return false;
                         }
 
-                        if (event.isHoliday && !this.showHolidays) {
-                            return false;
-                        }
-
-                        if (event.isGeneral && !this.showGeneralEvents) {
-                            return false;
-                        }
-
-                        if (!event.isHoliday && !event.isGeneral) {
+                        // סינון מבוסס תפריט ההגדרות עבור חופשות ואירועים כלליים
+                        if (event.isHoliday) {
+                            if (!this.showHolidays) return false;
+                        } else if (event.isGeneral) {
+                            if (!this.showGeneralEvents) return false;
+                        } else {
+                            // סינון לפי שכבה וכיתה רק עבור אירועי בחינות
                             if (this.selectedLayer !== 'all' && !event.layers.includes(this.selectedLayer)) return false;
                             if (this.selectedClass !== 'all' && event.classes.length > 0 && !event.classes.includes(this.selectedClass)) return false;
                         }
 
+                        // חיפוש חופשי
                         if (this.searchQuery.trim() !== '') {
                             const query = this.searchQuery.toLowerCase();
                             return event.title.toLowerCase().includes(query) || 
@@ -478,6 +479,10 @@
 
                 parseGoogleDate(dateVal) {
                     if (dateVal instanceof Date) return dateVal;
+
+                    if (typeof dateVal === 'number') {
+                        return new Date(Math.round((dateVal - 25569) * 86400 * 1000));
+                    }
 
                     if (typeof dateVal === 'string') {
                         if (dateVal.startsWith('Date(')) {
