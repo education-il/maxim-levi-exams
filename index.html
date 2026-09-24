@@ -15,7 +15,7 @@
       --settings-bg: #2a2a2a;
     }
 
-    /* מצב רקע לבן / בהיר */
+    /* מצב ערכת נושא בהירה */
     body.light-theme {
       --bg-color: #f5f5f7;
       --card-bg: #ffffff;
@@ -27,7 +27,7 @@
     }
 
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
       margin: 0;
@@ -45,10 +45,7 @@
       position: relative;
     }
 
-    h1 {
-      margin: 0;
-      font-size: 1.8rem;
-    }
+    h1 { margin: 0; font-size: 1.8rem; }
 
     /* כפתור גלגל שיניים */
     .settings-btn {
@@ -65,11 +62,9 @@
       transition: background-color 0.2s;
     }
 
-    .settings-btn:hover {
-      background-color: var(--border-color);
-    }
+    .settings-btn:hover { background-color: var(--border-color); }
 
-    /* תפריט הגדרות צף */
+    /* תפריט הגדרות */
     .settings-menu {
       display: none;
       position: absolute;
@@ -84,9 +79,7 @@
       overflow: hidden;
     }
 
-    .settings-menu.open {
-      display: block;
-    }
+    .settings-menu.open { display: block; }
 
     .settings-item {
       padding: 12px 16px;
@@ -101,15 +94,9 @@
       border-bottom: 1px solid var(--border-color);
     }
 
-    .settings-item:last-child {
-      border-bottom: none;
-    }
+    .settings-item:last-child { border-bottom: none; }
+    .settings-item:hover { background-color: var(--border-color); }
 
-    .settings-item:hover {
-      background-color: var(--border-color);
-    }
-
-    /* סילטורים וכרטיסיות */
     .controls {
       display: flex;
       gap: 10px;
@@ -142,41 +129,16 @@
       border-right: 4px solid var(--accent-color);
       padding: 16px;
       border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .event-details {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .event-title {
-      font-size: 1.1rem;
-      font-weight: bold;
-    }
-
-    .event-meta {
-      color: var(--subtext-color);
-      font-size: 0.9rem;
-    }
-
-    .event-class {
-      background-color: var(--border-color);
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      font-weight: bold;
-    }
-
-    .loading {
-      text-align: center;
-      color: var(--subtext-color);
-      margin-top: 40px;
-    }
+    .event-details { display: flex; flex-direction: column; gap: 4px; }
+    .event-title { font-size: 1.1rem; font-weight: bold; }
+    .event-meta { color: var(--subtext-color); font-size: 0.9rem; }
+    .event-class { background-color: var(--border-color); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; }
+    .loading { text-align: center; color: var(--subtext-color); margin-top: 40px; }
   </style>
 </head>
 <body>
@@ -192,12 +154,8 @@
   </div>
 
   <div class="controls">
-    <select id="gradeFilter">
-      <option value="">כל השכבות</option>
-    </select>
-    <select id="classFilter">
-      <option value="">כל הכיתות</option>
-    </select>
+    <select id="gradeFilter"><option value="">כל השכבות</option></select>
+    <select id="classFilter"><option value="">כל הכיתות</option></select>
   </div>
 
   <div id="eventsContainer" class="events-container">
@@ -205,13 +163,14 @@
   </div>
 
   <script>
-    // כתובת ה-CSV של גיליון ה-Looker המאוחד
-    const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT1TIwnott9Y7pTugeQ5Il-U00dUe5GE6Mcc7lRqfxuCBM/pub?gid=829069159&single=true&output=csv';
+    // ⬇️ כאן נשארת הגדרת ה-spreadsheetId מה-main העובד שלך ⬇️
+    // אם ה-ID נלקח מתוך מחלקה/משתנה ב-main, השאר אותו בדיוק כפי שהיה ב-main:
+    const spreadsheetId = '1tTIwnott9Y7pTugeQ5Il-U00dUe5GE6Mcc7lRqfxuCBM'; // או this.spreadsheetId
+    const queryUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?sheet=Looker&tq=SELECT*`;
 
     let allEvents = [];
-    let showPastEvents = false; // ברירת מחדל: לא מוצג
+    let showPastEvents = false;
 
-    // אלמנטים ב-DOM
     const settingsBtn = document.getElementById('settingsBtn');
     const settingsMenu = document.getElementById('settingsMenu');
     const togglePastBtn = document.getElementById('togglePastBtn');
@@ -220,98 +179,85 @@
     const classFilter = document.getElementById('classFilter');
     const eventsContainer = document.getElementById('eventsContainer');
 
-    // ניהול תפריט הגדרות
+    // פתיחה/סגירה של תפריט ההגדרות
     settingsBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       settingsMenu.classList.toggle('open');
     });
 
-    document.addEventListener('click', () => {
-      settingsMenu.classList.remove('open');
-    });
+    document.addEventListener('click', () => settingsMenu.classList.remove('open'));
 
-    // 1. הגדרת הצגת/הסתרת מבחני עבר
+    // toggle להצגת/הסתרת מבחני עבר
     togglePastBtn.addEventListener('click', () => {
       showPastEvents = !showPastEvents;
       togglePastBtn.textContent = showPastEvents ? 'הסתר מבחנים בעבר' : 'הצג מבחנים בעבר';
       renderEvents();
     });
 
-    // 2. הגדרת שינוי ערכת נושא (שחור/לבן)
+    // toggle לערכת נושא
     toggleThemeBtn.addEventListener('click', () => {
       document.body.classList.toggle('light-theme');
       const isLight = document.body.classList.contains('light-theme');
       toggleThemeBtn.textContent = isLight ? 'הפוך לשחור' : 'הפוך רקע ללבן';
     });
 
-    // טעינת נתונים
     async function loadData() {
       try {
-        const response = await fetch(SHEET_CSV_URL);
-        const csvText = await response.text();
-        allEvents = parseCSV(csvText);
+        const response = await fetch(queryUrl);
+        const text = await response.text();
         
+        // פענוח התשובה מ-GViz API
+        const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+        const data = JSON.parse(jsonString);
+        
+        parseGVizData(data.table.rows);
         populateFilters();
         renderEvents();
       } catch (error) {
         eventsContainer.innerHTML = '<div class="loading">אירעה שגיאה בטעינת הנתונים.</div>';
-        console.error('Error loading data:', error);
+        console.error('Error loading GViz data:', error);
       }
     }
 
-    // פענוח ה-CSV
-    function parseCSV(text) {
-      const lines = text.trim().split('\n');
-      const events = [];
+    function parseGVizData(rows) {
+      allEvents = rows.map(row => {
+        const cells = row.c;
+        if (!cells || !cells[0]) return null;
 
-      for (let i = 0; i < lines.length; i++) {
-        const row = lines[i].split(',').map(cell => cell.trim().replace(/^"(.*)"$/, '$1'));
-        if (row.length >= 4) {
-          const dateStr = row[0];
-          const day = row[1];
-          const className = row[2];
-          const title = row[3];
+        const dateStr = cells[0] ? (cells[0].f || cells[0].v) : '';
+        const day = cells[1] ? cells[1].v : '';
+        const className = cells[2] ? cells[2].v : '';
+        const title = cells[3] ? cells[3].v : '';
 
-          // המרת תאריך מ-DD/MM/YYYY לאובייקט Date לצורך השוואה
-          const dateParts = dateStr.split('/');
-          let dateObj = null;
-          if (dateParts.length === 3) {
-            dateObj = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+        // המרת תאריך (DD/MM/YYYY) לאובייקט Date לצורך השוואת עבר/עתיד
+        let dateObj = null;
+        if (dateStr && typeof dateStr === 'string') {
+          const parts = dateStr.split('/');
+          if (parts.length === 3) {
+            dateObj = new Date(parts[2], parts[1] - 1, parts[0]);
           }
-
-          // חילוץ שם השכבה מתוך שם הכיתה (למשל "ט" מתוך "1'ט")
-          const gradeMatch = className.match(/[ט-יb-z]+/i);
-          const grade = gradeMatch ? gradeMatch[0] : '';
-
-          events.push({
-            dateStr,
-            day,
-            className,
-            title,
-            grade,
-            dateObj
-          });
         }
-      }
-      return events;
+
+        const gradeMatch = className ? className.match(/[ט-יb-z]+/i) : null;
+        const grade = gradeMatch ? gradeMatch[0] : '';
+
+        return { dateStr, day, className, title, grade, dateObj };
+      }).filter(Boolean);
     }
 
-    // מילוי ה-Select-ים של היררכיית השכבות והכיתות
     function populateFilters() {
       const grades = [...new Set(allEvents.map(e => e.grade))].filter(Boolean);
       const classes = [...new Set(allEvents.map(e => e.className))].filter(Boolean);
 
       grades.forEach(g => {
         const opt = document.createElement('option');
-        opt.value = g;
-        opt.textContent = `שכבה ${g}'`;
+        opt.value = g; opt.textContent = `שכבה ${g}'`;
         gradeFilter.appendChild(opt);
       });
 
       classes.forEach(c => {
         const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = c;
+        opt.value = c; opt.textContent = c;
         classFilter.appendChild(opt);
       });
 
@@ -319,7 +265,6 @@
       classFilter.addEventListener('change', renderEvents);
     }
 
-    // רינדור האירועים על המסך
     function renderEvents() {
       const selectedGrade = gradeFilter.value;
       const selectedClass = classFilter.value;
@@ -328,11 +273,10 @@
       today.setHours(0, 0, 0, 0);
 
       const filtered = allEvents.filter(e => {
-        // סינון שכבה וכיתה
         if (selectedGrade && e.grade !== selectedGrade) return false;
         if (selectedClass && e.className !== selectedClass) return false;
-
-        // סינון לפי תאריך (אם הסינון פעיל והאירוע חל בעבר)
+        
+        // סינון אירועי עבר אם האופציה כבויה (ברירת מחדל: לא מוצגים)
         if (!showPastEvents && e.dateObj && e.dateObj < today) {
           return false;
         }
@@ -356,7 +300,6 @@
       `).join('');
     }
 
-    // הפעלה ראשונית
     loadData();
   </script>
 </body>
