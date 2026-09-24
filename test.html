@@ -269,9 +269,10 @@
                         const numCols = dataTable.getNumberOfColumns();
                         const rawEvents = [];
 
+                        // סריקת עמודות בגיליון במקפצות של 4 עמודות (A-D, E-H וכו')
                         for (let colOffset = 0; colOffset < numCols; colOffset += 4) {
                             for (let i = 0; i < numRows; i++) {
-                                const dateValue = dataTable.getValue(i, colOffset);   
+                                const dateValue = dataTable.getValue(i, colOffset);       
                                 const dayValue = dataTable.getValue(i, colOffset + 1);    
                                 const classValue = dataTable.getValue(i, colOffset + 2);  
                                 const eventValue = dataTable.getValue(i, colOffset + 3);  
@@ -284,31 +285,34 @@
                                 const classStr = classValue ? String(classValue).trim() : '';
                                 const eventStr = String(eventValue).trim();
 
+                                // זיהוי מדויק
                                 const isHoliday = classStr === 'חופש';
                                 const isGeneral = classStr === 'כללי';
 
                                 let layer = 'all';
                                 let specificClass = 'all';
 
-                                const cleanClassStr = classStr.replace(/['"׳]/g, '');
+                                if (!isHoliday && !isGeneral) {
+                                    const cleanClassStr = classStr.replace(/['"׳]/g, '');
 
-                                if (/^ט\d+/.test(cleanClassStr)) {
-                                    layer = 'ט';
-                                    specificClass = classStr;
-                                } else if (/^יא\d+/.test(cleanClassStr)) {
-                                    layer = 'יא';
-                                    specificClass = classStr;
-                                } else if (/^יב\d+/.test(cleanClassStr)) {
-                                    layer = 'יב';
-                                    specificClass = classStr;
-                                } else if (/^י\d+/.test(cleanClassStr)) {
-                                    layer = 'י';
-                                    specificClass = classStr;
-                                } else {
-                                    if (cleanClassStr === 'ט') layer = 'ט';
-                                    else if (cleanClassStr === 'י') layer = 'י';
-                                    else if (cleanClassStr === 'יא') layer = 'יא';
-                                    else if (cleanClassStr === 'יב') layer = 'יב';
+                                    if (/^ט\d+/.test(cleanClassStr)) {
+                                        layer = 'ט';
+                                        specificClass = classStr;
+                                    } else if (/^יא\d+/.test(cleanClassStr)) {
+                                        layer = 'יא';
+                                        specificClass = classStr;
+                                    } else if (/^יב\d+/.test(cleanClassStr)) {
+                                        layer = 'יב';
+                                        specificClass = classStr;
+                                    } else if (/^י\d+/.test(cleanClassStr)) {
+                                        layer = 'י';
+                                        specificClass = classStr;
+                                    } else {
+                                        if (cleanClassStr === 'ט') layer = 'ט';
+                                        else if (cleanClassStr === 'י') layer = 'י';
+                                        else if (cleanClassStr === 'יא') layer = 'יא';
+                                        else if (cleanClassStr === 'יב') layer = 'יב';
+                                    }
                                 }
 
                                 rawEvents.push({
@@ -325,6 +329,7 @@
                             }
                         }
 
+                        // קיבוץ אירועים זהים
                         const groupedMap = {};
                         rawEvents.forEach(event => {
                             const dateKey = event.dateObj.getTime();
