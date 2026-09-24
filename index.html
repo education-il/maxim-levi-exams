@@ -22,7 +22,6 @@
             to { width: 0%; }
         }
 
-        /* מניעת פס גלילה מכוער תוך שמירה על גלילה מתיקיה */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -32,13 +31,15 @@
         }
     </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen relative shadow-inner overflow-x-hidden" x-data="examsApp()">
+<body :class="isLightTheme ? 'bg-slate-100 text-slate-900' : 'bg-gray-950 text-gray-100'" class="min-h-screen relative shadow-inner overflow-x-hidden transition-colors duration-300" x-data="examsApp()">
 
+    <!-- Splash Screen -->
     <div x-show="showSplash" 
          x-transition:leave="transition ease-in duration-500"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-gray-950 z-[100] flex flex-col items-center justify-between p-6 text-center select-none">
+         :class="isLightTheme ? 'bg-slate-100' : 'bg-gray-950'"
+         class="fixed inset-0 z-[100] flex flex-col items-center justify-between p-6 text-center select-none">
         
         <div></div>
 
@@ -46,12 +47,12 @@
             <div class="w-48 md:w-64">
                 <img src="לוגו דרכא שקוף.png" alt="תיכון דרכא" class="w-full h-auto object-contain">
             </div>
-            <div class="h-px w-24 bg-gray-800"></div>
-            <p class="text-xl md:text-2xl font-medium text-emerald-400 leading-relaxed" x-text="motivationalQuote"></p>
+            <div class="h-px w-24" :class="isLightTheme ? 'bg-slate-300' : 'bg-gray-800'"></div>
+            <p class="text-xl md:text-2xl font-medium text-emerald-500 leading-relaxed" x-text="motivationalQuote"></p>
         </div>
 
         <div class="w-full max-w-xs mb-8">
-            <button @click="showSplash = false" class="relative w-full bg-gray-900 border border-gray-800 rounded-xl py-3 px-6 text-sm font-bold overflow-hidden text-white hover:border-gray-700 transition active:scale-[0.98]">
+            <button @click="showSplash = false" :class="isLightTheme ? 'bg-white border-slate-300 text-slate-800' : 'bg-gray-900 border-gray-800 text-white'" class="relative w-full border rounded-xl py-3 px-6 text-sm font-bold overflow-hidden hover:border-emerald-500 transition active:scale-[0.98]">
                 <div class="absolute inset-y-0 right-0 bg-emerald-600/20 progress-fill"></div>
                 <span class="relative z-10 flex items-center justify-center gap-2">
                     דלג אל הלוח
@@ -62,12 +63,46 @@
     </div>
 
     <div>
-        <header class="border-b border-gray-800 bg-gray-900/50 backdrop-blur-md sticky top-0 z-50 px-4 py-3">
+        <header :class="isLightTheme ? 'border-slate-200 bg-white/80' : 'border-gray-800 bg-gray-900/50'" class="border-b backdrop-blur-md sticky top-0 z-50 px-4 py-3 transition-colors duration-300">
             <div class="max-w-5xl mx-auto flex flex-row items-center justify-between gap-4">
                 
-                <div class="flex flex-col text-right">
-                    <h1 class="text-lg md:text-xl font-bold tracking-tight text-white">לוח בחינות ואירועים</h1>
-                    <p class="text-xs md:text-sm text-emerald-400/95 font-medium mt-0.5" x-text="motivationalQuote"></p>
+                <div class="flex items-center gap-3">
+                    <!-- כפתור גלגל שיניים להגדרות -->
+                    <div class="relative" @click.outside="showSettingsMenu = false">
+                        <button @click="showSettingsMenu = !showSettingsMenu" 
+                                :class="isLightTheme ? 'hover:bg-slate-200 text-slate-700' : 'hover:bg-gray-800 text-gray-200'"
+                                class="p-2 rounded-full transition focus:outline-none" 
+                                title="הגדרות">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </button>
+
+                        <!-- תפריט הגדרות צף -->
+                        <div x-show="showSettingsMenu" 
+                             x-cloak
+                             x-transition
+                             :class="isLightTheme ? 'bg-white border-slate-200 shadow-xl text-slate-800' : 'bg-gray-900 border-gray-800 shadow-2xl text-gray-100'"
+                             class="absolute right-0 mt-2 w-56 border rounded-xl overflow-hidden z-50 text-sm">
+                            <button @click="showPastEvents = !showPastEvents; showSettingsMenu = false" 
+                                    :class="isLightTheme ? 'hover:bg-slate-100 border-slate-100' : 'hover:bg-gray-800 border-gray-800'"
+                                    class="w-full text-right px-4 py-3 border-b transition flex items-center justify-between">
+                                <span x-text="showPastEvents ? 'הסתר מבחנים בעבר' : 'הצג מבחנים בעבר'"></span>
+                                <span class="text-xs text-emerald-500" x-text="showPastEvents ? '✓' : ''"></span>
+                            </button>
+                            <button @click="isLightTheme = !isLightTheme; showSettingsMenu = false" 
+                                    :class="isLightTheme ? 'hover:bg-slate-100' : 'hover:bg-gray-800'"
+                                    class="w-full text-right px-4 py-3 transition flex items-center justify-between">
+                                <span x-text="isLightTheme ? 'הפוך לשחור' : 'הפוך רקע ללבן'"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col text-right">
+                        <h1 :class="isLightTheme ? 'text-slate-900' : 'text-white'" class="text-lg md:text-xl font-bold tracking-tight">לוח בחינות ואירועים</h1>
+                        <p class="text-xs md:text-sm text-emerald-500 font-medium mt-0.5" x-text="motivationalQuote"></p>
+                    </div>
                 </div>
 
                 <div class="w-28 md:w-36 shrink-0 flex justify-end">
@@ -77,9 +112,9 @@
             </div>
 
             <div class="max-w-5xl mx-auto mt-3">
-                <div class="flex flex-wrap items-center gap-3 bg-gray-900 p-2 rounded-xl border border-gray-800/80 w-full">
+                <div :class="isLightTheme ? 'bg-slate-200/60 border-slate-300' : 'bg-gray-900 border-gray-800/80'" class="flex flex-wrap items-center gap-3 p-2 rounded-xl border w-full transition-colors duration-300">
                     <div class="flex-1 min-w-[120px]">
-                        <select x-model="selectedLayer" @change="handleLayerChange()" class="w-full bg-gray-800 text-sm rounded-lg border border-gray-700 px-3 py-2 text-white focus:outline-none focus:border-emerald-500 transition">
+                        <select x-model="selectedLayer" @change="handleLayerChange()" :class="isLightTheme ? 'bg-white text-slate-800 border-slate-300' : 'bg-gray-800 text-white border-gray-700'" class="w-full text-sm rounded-lg border px-3 py-2 focus:outline-none focus:border-emerald-500 transition">
                             <option value="all">כלל בית הספר</option>
                             <option value="ט">שכבת ט'</option>
                             <option value="י">שכבת י'</option>
@@ -89,7 +124,7 @@
                     </div>
 
                     <div class="flex-1 min-w-[110px]">
-                        <select x-model="selectedClass" :disabled="selectedLayer === 'all'" class="w-full bg-gray-800 text-sm rounded-lg border border-gray-700 px-3 py-2 text-white focus:outline-none focus:border-emerald-500 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                        <select x-model="selectedClass" :disabled="selectedLayer === 'all'" :class="isLightTheme ? 'bg-white text-slate-800 border-slate-300' : 'bg-gray-800 text-white border-gray-700'" class="w-full text-sm rounded-lg border px-3 py-2 focus:outline-none focus:border-emerald-500 transition disabled:opacity-40 disabled:cursor-not-allowed">
                             <option value="all">כל השכבה</option>
                             <template x-for="cls in availableClasses" :key="cls">
                                 <option :value="cls" x-text="cls"></option>
@@ -98,7 +133,7 @@
                     </div>
 
                     <div class="w-full sm:w-52 relative">
-                        <input type="text" x-model="searchQuery" placeholder="חיפוש חופשי..." class="w-full bg-gray-800 text-sm rounded-lg border border-gray-700 pr-8 pl-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition">
+                        <input type="text" x-model="searchQuery" placeholder="חיפוש חופשי..." :class="isLightTheme ? 'bg-white text-slate-800 border-slate-300 placeholder-slate-400' : 'bg-gray-800 text-white border-gray-700 placeholder-gray-500'" class="w-full text-sm rounded-lg border pr-8 pl-3 py-2 focus:outline-none focus:border-emerald-500 transition">
                         <span class="absolute right-2.5 top-2.5 text-gray-500">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </span>
@@ -111,30 +146,30 @@
             
             <div x-show="loading" class="flex flex-col items-center justify-center py-20 gap-3">
                 <div class="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-gray-400 text-sm">טוען נתונים ומסנכרן את הלוח...</p>
+                <p :class="isLightTheme ? 'text-slate-500' : 'text-gray-400'" class="text-sm">טוען נתונים ומסנכרן את הלוח...</p>
             </div>
 
             <div x-show="!loading && error" class="bg-red-950/40 border border-red-800/60 text-red-200 p-4 rounded-xl text-center" x-text="error" x-cloak></div>
 
-            <div x-show="!loading && filteredEvents.length === 0" class="text-center py-16 bg-gray-900/20 border border-gray-800/60 rounded-xl" x-cloak>
-                <p class="text-gray-400">לא נמצאו בחינות או אירועים העונים על סינון זה.</p>
+            <div x-show="!loading && filteredEvents.length === 0" :class="isLightTheme ? 'bg-white/60 border-slate-300' : 'bg-gray-900/20 border-gray-800/60'" class="text-center py-16 border rounded-xl" x-cloak>
+                <p :class="isLightTheme ? 'text-slate-500' : 'text-gray-400'">לא נמצאו בחינות או אירועים העונים על סינון זה.</p>
             </div>
 
             <div x-show="!loading && filteredEvents.length > 0" class="space-y-2" x-cloak>
                 <template x-for="event in filteredEvents" :key="event.id">
-                    <div class="flex items-center gap-3 p-3 bg-gray-900/60 hover:bg-gray-900 border border-gray-800 hover:border-gray-700/80 rounded-xl transition duration-150">
+                    <div :class="isLightTheme ? 'bg-white border-slate-200 hover:border-slate-300' : 'bg-gray-900/60 hover:bg-gray-900 border-gray-800 hover:border-gray-700/80'" class="flex items-center gap-3 p-3 border rounded-xl transition duration-150">
                         
-                        <div class="flex items-center gap-2 bg-gray-800/80 border border-gray-700 px-3 py-1.5 rounded-lg shrink-0 text-xs sm:text-sm font-medium text-gray-200">
+                        <div :class="isLightTheme ? 'bg-slate-100 border-slate-300 text-slate-700' : 'bg-gray-800/80 border-gray-700 text-gray-200'" class="flex items-center gap-2 border px-3 py-1.5 rounded-lg shrink-0 text-xs sm:text-sm font-medium">
                             <span x-text="event.formattedDate"></span>
-                            <span class="text-gray-500 font-normal">|</span>
-                            <span x-text="event.dayOfWeek" class="text-emerald-400 font-bold"></span>
+                            <span class="text-gray-400 font-normal">|</span>
+                            <span x-text="event.dayOfWeek" class="text-emerald-500 font-bold"></span>
                         </div>
 
                         <div class="flex-1 min-w-0 overflow-x-auto no-scrollbar">
                             <div class="flex items-center gap-2.5 whitespace-nowrap w-max">
-                                <span class="text-sm sm:text-base text-gray-100 font-medium" x-text="event.title"></span>
+                                <span :class="isLightTheme ? 'text-slate-800' : 'text-gray-100'" class="text-sm sm:text-base font-medium" x-text="event.title"></span>
 
-                                <span :class="event.isHoliday ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'" 
+                                <span :class="event.isHoliday ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'" 
                                       class="text-xs font-semibold px-2.5 py-0.5 rounded-md border shrink-0" 
                                       x-text="event.targetDisplay">
                                 </span>
@@ -160,6 +195,9 @@
                 searchQuery: '',
                 motivationalQuote: '',
                 showSplash: true,
+                showSettingsMenu: false,
+                showPastEvents: false, // ברירת מחדל: לא מציג אירועי עבר
+                isLightTheme: false,    // ברירת מחדל: מצב כהה
                 
                 quotes: [
                     "ההשקעה של היום היא ההצלחה של מחר.",
@@ -337,7 +375,15 @@
                 },
 
                 get filteredEvents() {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
                     return this.allEvents.filter(event => {
+                        // סינון אירועי עבר (מציג רק מהיום והלאה, אלא אם כן סומן "הצג מבחנים בעבר")
+                        if (!this.showPastEvents && event.dateObj && event.dateObj < today) {
+                            return false;
+                        }
+
                         if (this.selectedLayer !== 'all' && !event.layers.includes(this.selectedLayer)) return false;
 
                         if (this.selectedClass !== 'all' && event.classes.length > 0 && !event.classes.includes(this.selectedClass)) return false;
